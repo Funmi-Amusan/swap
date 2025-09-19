@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 // --- TYPE DEFINITIONS ---
 interface IPhonePrice {
@@ -70,7 +70,11 @@ const formatPrice = (price: number) => {
 };
 
 // --- COMPONENT ---
-export function IPhoneCalculator() {
+interface IPhoneCalculatorProps {
+  onDone?: () => void;
+}
+
+export function IPhoneCalculator({ onDone }: IPhoneCalculatorProps) {
   const [selectedModelName, setSelectedModelName] = useState<string>(iphoneDatabase[0].name);
   const [selectedStorage, setSelectedStorage] = useState<number>(iphoneDatabase[0].prices[0].storage);
   const [batteryHealth, setBatteryHealth] = useState<number>(100);
@@ -135,6 +139,15 @@ export function IPhoneCalculator() {
     </div>
   );
 
+
+  const [showNextStep, setShowNextStep] = useState(false);
+
+  useEffect(() => {
+    if (showNextStep && onDone) {
+      onDone();
+    }
+  }, [showNextStep, onDone]);
+
   return (
     <div className="w-full max-w-md mx-auto bg-black/30 backdrop-blur-xl rounded-2xl shadow-2xl p-6 text-white font-sans">
       <div className="text-center mb-6">
@@ -166,6 +179,12 @@ export function IPhoneCalculator() {
         <p className="text-4xl font-bold text-purple-400 tracking-tight transition-all duration-300">
           {formatPrice(finalPrice)}
         </p>
+        <button
+          className="mt-6 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition"
+          onClick={() => setShowNextStep(true)}
+        >
+          Continue
+        </button>
       </div>
     </div>
   );
