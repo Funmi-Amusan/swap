@@ -53,7 +53,7 @@ export default function ConfirmPage() {
       <div className="w-full max-w-lg bg-white border border-gray-200 rounded-2xl shadow-lg p-8 text-center">
         <h1 className="text-2xl font-bold text-black mb-4">Swap Request Submitted!</h1>
         <p className="text-green-600 font-semibold mb-2">Thank you for using SWAPPED.</p>
-        <p className="text-gray-500 mb-6">We have received your request and will contact you soon to finalize your swap and appointment.</p>
+        <p className="text-gray-500 mb-6">We have received your request and will send you an email to confirm your appointment. The price is not final until we complete our inspections</p>
         
         {loading ? (
             <p>Loading appointment details...</p>
