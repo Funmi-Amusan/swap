@@ -1,191 +1,248 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import Select from 'react-select';
 
-// --- TYPE DEFINITIONS ---
-interface IPhonePrice {
-  storage: number;
-  price: number; // Base price in NGN
-}
+const modelOptions = [
+    { value: "x-64", label: "iPhone X 64GB" },
+    { value: "x-256", label: "iPhone X 256GB" },
+    { value: "xs-64", label: "iPhone XS 64GB" },
+    { value: "xs-256", label: "iPhone XS 256GB" },
+    { value: "xr-64", label: "iPhone XR 64GB" },
+    { value: "xr-128", label: "iPhone XR 128GB" },
+    { value: "xsmax-64", label: "iPhone XS Max 64GB" },
+    { value: "xsmax-256", label: "iPhone XS Max 256GB" },
+    { value: "11-64", label: "iPhone 11 64GB" },
+    { value: "11-128", label: "iPhone 11 128GB" },
+    { value: "11pro-64", label: "iPhone 11 Pro 64GB" },
+    { value: "11pro-256", label: "iPhone 11 Pro 256GB" },
+    { value: "11promax-64", label: "iPhone 11 Pro Max 64GB" },
+    { value: "11promax-256", label: "iPhone 11 Pro Max 256GB" },
+    { value: "12-64", label: "iPhone 12 64GB" },
+    { value: "12-128", label: "iPhone 12 128GB" },
+    { value: "12pro-128", label: "iPhone 12 Pro 128GB" },
+    { value: "12pro-256", label: "iPhone 12 Pro 256GB" },
+    { value: "12promax-128", label: "iPhone 12 Pro Max 128GB" },
+    { value: "12promax-256", label: "iPhone 12 Pro Max 256GB" },
+    { value: "13-128", label: "iPhone 13 128GB" },
+    { value: "13-256", label: "iPhone 13 256GB" },
+    { value: "13mini-128", label: "iPhone 13 Mini 128GB" },
+    { value: "13mini-256", label: "iPhone 13 Mini 256GB" },
+    { value: "13pro-128", label: "iPhone 13 Pro 128GB" },
+    { value: "13pro-256", label: "iPhone 13 Pro 256GB" },
+    { value: "13promax-128", label: "iPhone 13 Pro Max 128GB" },
+    { value: "13promax-256", label: "iPhone 13 Pro Max 256GB" },
+    { value: "14-128", label: "iPhone 14 128GB" },
+    { value: "14-256", label: "iPhone 14 256GB" },
+    { value: "14pro-128", label: "iPhone 14 Pro 128GB" },
+    { value: "14pro-256", label: "iPhone 14 Pro 256GB" },
+    { value: "14promax-128", label: "iPhone 14 Pro Max 128GB" },
+    { value: "14promax-256", label: "iPhone 14 Pro Max 256GB" },
+    { value: "14promax-512", label: "iPhone 14 Pro Max 512GB" },
+    { value: "15-128", label: "iPhone 15 128GB" },
+    { value: "15-256", label: "iPhone 15 256GB" },
+    { value: "15pro-128", label: "iPhone 15 Pro 128GB" },
+    { value: "15pro-256", label: "iPhone 15 Pro 256GB" },
+    { value: "15pro-512", label: "iPhone 15 Pro 512GB" },
+    { value: "15promax-256", label: "iPhone 15 Pro Max 256GB" },
+    { value: "15promax-512", label: "iPhone 15 Pro Max 512GB" },
+    { value: "16-128", label: "iPhone 16 128GB" },
+    { value: "16-256", label: "iPhone 16 256GB" },
+    { value: "16-512", label: "iPhone 16 512GB" },
+  ];
 
-interface IPhone {
-  name: string;
-  series: number; // To group models for deduction logic (e.g., 11, 12, 13)
-  prices: IPhonePrice[];
-}
+  const batteryOptions = [
+      { value: "90+", label: "90% and above" },
+      { value: "84-90", label: "84-90%" },
+      { value: "79-84", label: "79-84%" },
+      { value: "78-", label: "78% and below" },
+      { value: "changed", label: "Changed Battery (Non-Original)" },
+  ];
 
-type Condition = 'Pristine' | 'Cracked' | 'Heavily Cracked';
-type BodyCondition = 'Pristine' | 'Light Wear' | 'Heavy Wear';
+  const faceIdOptions = [
+      { value: "working", label: "Face ID Working" },
+      { value: "not-working", label: "No Face ID" },
+  ];
 
-// --- PRICING DATABASE ---
-const iphoneDatabase: IPhone[] = [
-  { name: 'iPhone X', series: 10, prices: [{ storage: 64, price: 120000 }, { storage: 256, price: 140000 }] },
-  { name: 'iPhone XS', series: 10, prices: [{ storage: 64, price: 140000 }, { storage: 256, price: 160000 }] },
-  { name: 'iPhone XS Max', series: 10, prices: [{ storage: 64, price: 170000 }, { storage: 256, price: 190000 }] },
-  { name: 'iPhone 11', series: 11, prices: [{ storage: 64, price: 180000 }, { storage: 128, price: 200000 }] },
-  { name: 'iPhone 11 Pro', series: 11, prices: [{ storage: 64, price: 240000 }, { storage: 256, price: 270000 }] },
-  { name: 'iPhone 11 Pro Max', series: 11, prices: [{ storage: 64, price: 280000 }, { storage: 256, price: 310000 }] },
-  { name: 'iPhone 12', series: 12, prices: [{ storage: 64, price: 290000 }, { storage: 128, price: 320000 }] },
-  { name: 'iPhone 12 Pro', series: 12, prices: [{ storage: 128, price: 380000 }, { storage: 256, price: 410000 }] },
-  { name: 'iPhone 12 Pro Max', series: 12, prices: [{ storage: 128, price: 450000 }, { storage: 256, price: 480000 }] },
-  { name: 'iPhone 13', series: 13, prices: [{ storage: 128, price: 430000 }, { storage: 256, price: 460000 }] },
-  { name: 'iPhone 13 Pro', series: 13, prices: [{ storage: 128, price: 550000 }, { storage: 256, price: 590000 }] },
-  { name: 'iPhone 13 Pro Max', series: 13, prices: [{ storage: 128, price: 620000 }, { storage: 256, price: 660000 }] },
-  { name: 'iPhone 14', series: 14, prices: [{ storage: 128, price: 600000 }, { storage: 256, price: 640000 }] },
-  { name: 'iPhone 14 Pro', series: 14, prices: [{ storage: 128, price: 780000 }, { storage: 256, price: 830000 }] },
-  { name: 'iPhone 14 Pro Max', series: 14, prices: [{ storage: 128, price: 850000 }, { storage: 256, price: 900000 }] },
-  { name: 'iPhone 15', series: 15, prices: [{ storage: 128, price: 950000 }, { storage: 256, price: 1000000 }] },
-  { name: 'iPhone 15 Pro', series: 15, prices: [{ storage: 256, price: 1200000 }, { storage: 512, price: 1300000 }] },
-  { name: 'iPhone 15 Pro Max', series: 15, prices: [{ storage: 256, price: 1350000 }, { storage: 512, price: 1450000 }] },
-  { name: 'iPhone 16', series: 16, prices: [{ storage: 256, price: 1500000 }, { storage: 512, price: 1600000 }] },
-  { name: 'iPhone 16 Pro', series: 16, prices: [{ storage: 256, price: 1700000 }, { storage: 512, price: 1800000 }] },
-  { name: 'iPhone 16 Pro Max', series: 16, prices: [{ storage: 256, price: 1900000 }, { storage: 512, price: 2000000 }] },
-];
+  const backGlassOptions = [
+      { value: "mint", label: "Mint (No scratches/dents)" },
+      { value: "minor", label: "Small scratches/dents" },
+      { value: "broken", label: "Broken back glass" },
+  ];
 
-// --- DEDUCTION LOGIC ---
-const DEDUCTIONS = {
-  BATTERY_THRESHOLD: 85,
-  BATTERY_FLAT_DEDUCTION: 25000,
-  FACE_ID_FAULTY: {
-    series_10_11: 40000,
-    series_12_plus: 60000,
-  },
-  SCREEN: {
-    'Cracked': 35000,
-    'Heavily Cracked': 70000,
-  },
-  BACK_GLASS: {
-    'Cracked': 30000,
-    'Heavily Cracked': 60000,
-  },
-  BODY: {
-    'Light Wear': 15000,
-    'Heavy Wear': 30000,
-  }
-};
+  const screenOptions = [
+        { value: "mint", label: "Mint Screen (Original)" },
+        { value: "changed", label: "Changed Screen (Non-Original)" },
+        { value: "cracked", label: "Cracked Screen" },
+  ];
 
-// --- HELPER FUNCTIONS ---
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(price);
-};
+  const bodyOptions = [
+        { value: "mint", label: "No scratches/dents" },
+        { value: "minor", label: "Minor scuffs/scratches" },
+        { value: "dents", label: "Visible dents" },
+  ];
 
-// --- COMPONENT ---
-interface IPhoneCalculatorProps {
-  onDone?: () => void;
-}
+  const simOptions = [
+      { value: "physical", label: "Physical SIM" },
+      { value: "esim", label: "eSIM Only" },
+  ];
 
-export function IPhoneCalculator({ onDone }: IPhoneCalculatorProps) {
-  const [selectedModelName, setSelectedModelName] = useState<string>(iphoneDatabase[0].name);
-  const [selectedStorage, setSelectedStorage] = useState<number>(iphoneDatabase[0].prices[0].storage);
-  const [batteryHealth, setBatteryHealth] = useState<number>(100);
-  const [isFaceIdWorking, setIsFaceIdWorking] = useState<boolean>(true);
-  const [screenCondition, setScreenCondition] = useState<Condition>('Pristine');
-  const [backGlassCondition, setBackGlassCondition] = useState<Condition>('Pristine');
-  const [bodyCondition, setBodyCondition] = useState<BodyCondition>('Pristine');
-
-  const selectedModel = useMemo(() => {
-    return iphoneDatabase.find(m => m.name === selectedModelName) || iphoneDatabase[0];
-  }, [selectedModelName]);
-
-  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newModelName = e.target.value;
-    const newModel = iphoneDatabase.find(m => m.name === newModelName)!;
-    setSelectedModelName(newModelName);
-    // Reset storage to the first available for the new model
-    setSelectedStorage(newModel.prices[0].storage);
+  const customStyles = {
+    control: (provided: any) => ({
+      ...provided,
+      backgroundColor: '#f9fafb',
+      border: '1px solid #d1d5db',
+      borderRadius: '0.5rem',
+      padding: '0.35rem',
+      color: 'black',
+      '&:hover': {
+        borderColor: '#3b82f6',
+      },
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#eff6ff' : 'white',
+      color: state.isSelected ? 'white' : 'black',
+    }),
+    singleValue: (provided: any) => ({
+        ...provided,
+        color: 'black',
+    }),
+    menu: (provided: any) => ({
+        ...provided,
+        backgroundColor: 'white',
+    }),
   };
 
-  const finalPrice = useMemo(() => {
-    const modelPriceInfo = selectedModel.prices.find(p => p.storage === selectedStorage);
-    if (!modelPriceInfo) return 0;
+export interface TradeInFormData {
+    model: string;
+    battery: string;
+    faceid: string;
+    backglass: string;
+    screen: string;
+    body: string;
+    sim: string;
+}
 
-    let price = modelPriceInfo.price;
-    let deductions = 0;
+export function IPhoneCalculator({ 
+    formData, 
+    setFormData,
+    finalPrice
+}: { 
+    formData: TradeInFormData;
+    setFormData: (data: TradeInFormData) => void;
+    finalPrice: number;
+}) {
+    const handleChange = (field: string, value: string) => {
+        setFormData({ ...formData, [field]: value });
+    };
 
-    // Battery Health Deduction
-    if (batteryHealth < DEDUCTIONS.BATTERY_THRESHOLD) {
-      deductions += DEDUCTIONS.BATTERY_FLAT_DEDUCTION;
-    }
+    const handleSelectChange = (field: string, option: any) => {
+        handleChange(field, option ? option.value : '');
+    };
 
-    // Face ID Deduction
-    if (!isFaceIdWorking) {
-      deductions += selectedModel.series <= 11 ? DEDUCTIONS.FACE_ID_FAULTY.series_10_11 : DEDUCTIONS.FACE_ID_FAULTY.series_12_plus;
-    }
+    const isNewerModel = formData.model && (formData.model.startsWith('14') || formData.model.startsWith('15') || formData.model.startsWith('16'));
 
-    // Screen Condition Deduction
-    if (screenCondition !== 'Pristine') {
-      deductions += DEDUCTIONS.SCREEN[screenCondition];
-    }
+    return (
+        <div className="w-full max-w-md mx-auto bg-white border border-gray-200 rounded-2xl shadow-lg p-6 text-black font-sans">
+            <div className="text-center mb-6">
+                <h1 className="text-2xl font-bold">Your Phone's Details</h1>
+                <p className="text-gray-500 text-sm">Tell us about the phone you are trading in.</p>
+            </div>
 
-    // Back Glass Deduction
-    if (backGlassCondition !== 'Pristine') {
-      deductions += DEDUCTIONS.BACK_GLASS[backGlassCondition];
-    }
-    
-    // Body Condition Deduction
-    if (bodyCondition !== 'Pristine') {
-        deductions += DEDUCTIONS.BODY[bodyCondition];
-    }
+            <div className="space-y-5">
+                <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">iPhone Model</label>
+                    <Select
+                        instanceId="iphone-model-select"
+                        options={modelOptions}
+                        value={modelOptions.find(option => option.value === formData.model)}
+                        onChange={(option) => handleSelectChange('model', option)}
+                        styles={customStyles}
+                        placeholder="Select iPhone Model"
+                    />
+                </div>
 
-    return Math.max(0, price - deductions);
-  }, [selectedModel, selectedStorage, batteryHealth, isFaceIdWorking, screenCondition, backGlassCondition, bodyCondition]);
+                <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Battery Health</label>
+                    <Select
+                        instanceId="battery-select"
+                        options={batteryOptions}
+                        value={batteryOptions.find(option => option.value === formData.battery)}
+                        onChange={(option) => handleSelectChange('battery', option)}
+                        styles={customStyles}
+                        placeholder="Select Battery Health"
+                    />
+                </div>
 
-  const renderSelect = (label: string, value: any, onChange: (e: any) => void, options: {value: any, label: string}[]) => (
-    <div className="flex flex-col space-y-2">
-      <label className="text-sm font-medium text-gray-300">{label}</label>
-      <select value={value} onChange={onChange} className="bg-gray-700/50 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none transition">
-        {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-      </select>
-    </div>
-  );
+                <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Face ID</label>
+                    <Select
+                        instanceId="faceid-select"
+                        options={faceIdOptions}
+                        value={faceIdOptions.find(option => option.value === formData.faceid)}
+                        onChange={(option) => handleSelectChange('faceid', option)}
+                        styles={customStyles}
+                        placeholder="Select Face ID status"
+                    />
+                </div>
 
+                <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Back Glass</label>
+                    <Select
+                        instanceId="backglass-select"
+                        options={backGlassOptions}
+                        value={backGlassOptions.find(option => option.value === formData.backglass)}
+                        onChange={(option) => handleSelectChange('backglass', option)}
+                        styles={customStyles}
+                        placeholder="Select Back Glass condition"
+                    />
+                </div>
 
-  const [showNextStep, setShowNextStep] = useState(false);
+                <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Screen</label>
+                    <Select
+                        instanceId="screen-select"
+                        options={screenOptions}
+                        value={screenOptions.find(option => option.value === formData.screen)}
+                        onChange={(option) => handleSelectChange('screen', option)}
+                        styles={customStyles}
+                        placeholder="Select Screen condition"
+                    />
+                </div>
 
-  useEffect(() => {
-    if (showNextStep && onDone) {
-      onDone();
-    }
-  }, [showNextStep, onDone]);
+                <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Body Condition</label>
+                    <Select
+                        instanceId="body-select"
+                        options={bodyOptions}
+                        value={bodyOptions.find(option => option.value === formData.body)}
+                        onChange={(option) => handleSelectChange('body', option)}
+                        styles={customStyles}
+                        placeholder="Select Body condition"
+                    />
+                </div>
 
-  return (
-    <div className="w-full max-w-md mx-auto bg-black/30 backdrop-blur-xl rounded-2xl shadow-2xl p-6 text-white font-sans">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold">iPhone Trade-in Calculator</h1>
-        <p className="text-gray-400 text-sm">Get an instant estimate for your device.</p>
-      </div>
+                {isNewerModel && (
+                    <div>
+                        <label className="block mb-2 text-sm font-medium text-gray-700">SIM Type</label>
+                        <Select
+                            instanceId="sim-select"
+                            options={simOptions}
+                            value={simOptions.find(option => option.value === formData.sim)}
+                            onChange={(option) => handleSelectChange('sim', option)}
+                            styles={customStyles}
+                            placeholder="Select SIM type"
+                        />
+                    </div>
+                )}
+            </div>
 
-      <div className="space-y-5">
-        {/* Model and Storage */}
-        {renderSelect("iPhone Model", selectedModelName, handleModelChange, iphoneDatabase.map(m => ({ value: m.name, label: m.name })))}
-        {renderSelect("Storage", selectedStorage, (e) => setSelectedStorage(Number(e.target.value)), selectedModel.prices.map(p => ({ value: p.storage, label: `${p.storage} GB` })))}
-
-        {/* Battery Health */}
-        <div className="flex flex-col space-y-2">
-          <label htmlFor="battery" className="text-sm font-medium text-gray-300">Battery Health: <span className="font-bold text-purple-400">{batteryHealth}%</span></label>
-          <input id="battery" type="range" min="70" max="100" value={batteryHealth} onChange={(e) => setBatteryHealth(Number(e.target.value))} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-500" />
+            {finalPrice > 0 && (
+                <div className="mt-6 text-center">
+                    <p className="text-lg font-semibold">Trade-in Value:</p>
+                    <p className="text-3xl font-bold text-green-600">₦{finalPrice.toLocaleString()}</p>
+                </div>
+            )}
         </div>
-
-        {/* Condition Toggles */}
-        {renderSelect("Face ID / Touch ID", String(isFaceIdWorking), (e) => setIsFaceIdWorking(e.target.value === 'true'), [{value: 'true', label: 'Working'}, {value: 'false', label: 'Faulty'}])}
-        {renderSelect("Screen Condition", screenCondition, (e) => setScreenCondition(e.target.value), [{value: 'Pristine', label: 'Pristine'}, {value: 'Cracked', label: 'Cracked'}, {value: 'Heavily Cracked', label: 'Heavily Cracked'}])}
-        {renderSelect("Back Glass Condition", backGlassCondition, (e) => setBackGlassCondition(e.target.value), [{value: 'Pristine', label: 'Pristine'}, {value: 'Cracked', label: 'Cracked'}, {value: 'Heavily Cracked', label: 'Heavily Cracked'}])}
-        {renderSelect("Body Condition", bodyCondition, (e) => setBodyCondition(e.target.value), [{value: 'Pristine', label: 'Pristine'}, {value: 'Light Wear', label: 'Light Wear'}, {value: 'Heavy Wear', label: 'Heavy Wear'}])}
-      </div>
-
-      {/* Price Display */}
-      <div className="mt-8 pt-6 border-t border-gray-700 text-center">
-        <p className="text-gray-400">Estimated Trade-in Value</p>
-        <p className="text-4xl font-bold text-purple-400 tracking-tight transition-all duration-300">
-          {formatPrice(finalPrice)}
-        </p>
-        <button
-          className="mt-6 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition"
-          onClick={() => setShowNextStep(true)}
-        >
-          Continue
-        </button>
-      </div>
-    </div>
-  );
+    );
 }

@@ -1,47 +1,67 @@
-import React, { useState } from 'react';
+"use client";
+
+import React, { useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Listbox } from '@headlessui/react';
 
-export function AppointmentScheduler() {
+export interface AppointmentDetails {
+    appointmentType: { value: string; label: string; };
+    date: Date | null;
+    time: Date | null;
+}
+
+export interface AppointmentFormData {
+    appointmentType: { value: string; label: string; };
+    date: Date | null;
+    time: Date | null;
+}
+
+export function AppointmentScheduler({ 
+    formData,
+    setFormData,
+    onDataChange, 
+    onValidationChange 
+}: { 
+    formData: AppointmentFormData;
+    setFormData: (data: AppointmentFormData) => void;
+    onDataChange: (details: AppointmentDetails) => void; 
+    onValidationChange: (isValid: boolean) => void; 
+}) {
   const appointmentTypes = [
     { value: 'house_call', label: 'Certified Expert House Call' },
     { value: 'dispatch_pickup', label: 'Dispatch Pickup' },
     { value: 'walk_in', label: 'Walk-in Customer' },
   ];
-  const [appointmentType, setAppointmentType] = useState(appointmentTypes[0]);
-  const [date, setDate] = useState<Date | null>(null);
-  const [time, setTime] = useState<Date | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const { appointmentType, date, time } = formData;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
+  useEffect(() => {
+    const isValid = !!appointmentType && !!date && !!time;
+    onValidationChange(isValid);
+    if (isValid) {
+        onDataChange({ appointmentType, date, time });
+    }
+  }, [appointmentType, date, time, onValidationChange, onDataChange]);
 
-  if (submitted) {
-    return (
-      <div className="w-full max-w-md mx-auto bg-neutral-900 rounded-2xl shadow-2xl p-6 text-white font-sans mt-8 text-center border border-neutral-800">
-        <h2 className="text-xl font-bold mb-4 text-neon-green">Appointment Booked!</h2>
-        <p className="text-gray-300 mb-2">Your appointment for <span className="font-bold text-neon-green">{date?.toLocaleDateString()}</span> at <span className="font-bold text-neon-green">{time ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span> has been scheduled as <span className="font-bold text-purple-700">{appointmentType.label}</span>.</p>
-        <p className="text-neon-green font-semibold">Thank you! We will contact you with further details.</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-neutral-900 rounded-2xl shadow-2xl p-6 text-white font-sans mt-8 border border-neutral-800">
-      <h2 className="text-xl font-bold mb-4 text-center text-purple-700">Schedule Appointment</h2>
-      <form className="space-y-5" onSubmit={handleSubmit}>
+    <div className="w-full max-w-md mx-auto bg-white border border-gray-200 rounded-2xl shadow-lg p-6 text-black font-sans">
+        <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold">Schedule Appointment</h1>
+            <p className="text-gray-500 text-sm">Select a date and time for your appointment.</p>
+        </div>
+      <div className="space-y-5">
         <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-gray-300">Appointment Type</label>
-          <Listbox value={appointmentType} onChange={setAppointmentType}>
-            <Listbox.Button className="bg-neutral-800 border border-neutral-700 rounded-md p-2 text-white focus:ring-2 focus:ring-purple-700 focus:outline-none transition flex justify-between items-center">
+          <label className="text-sm font-medium text-gray-700">Appointment Type</label>
+          <Listbox value={appointmentType} onChange={(value) => setFormData({ ...formData, appointmentType: value })}>
+            <Listbox.Button className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-black text-left flex justify-between items-center">
               {appointmentType.label}
+              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+              </span>
             </Listbox.Button>
-            <Listbox.Options className="mt-1 bg-neutral-800 border border-neutral-700 rounded-md shadow-lg">
+            <Listbox.Options className="mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
               {appointmentTypes.map((type) => (
-                <Listbox.Option key={type.value} value={type} className={({ active }) => `cursor-pointer select-none p-2 ${active ? 'bg-purple-700 text-white' : 'text-gray-300'}`}>
+                <Listbox.Option key={type.value} value={type} className={({ active }) => `cursor-pointer select-none p-2 ${active ? 'bg-blue-500 text-white' : 'text-black'}`}>
                   {type.label}
                 </Listbox.Option>
               ))}
@@ -49,44 +69,33 @@ export function AppointmentScheduler() {
           </Listbox>
         </div>
         <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-gray-300">Date</label>
+          <label className="text-sm font-medium text-gray-700">Date</label>
           <DatePicker
             selected={date}
-            onChange={setDate}
+            onChange={(date) => setFormData({ ...formData, date })}
             dateFormat="MMMM d, yyyy"
-            className="bg-neutral-800 border border-neutral-700 rounded-md p-2 text-white focus:ring-2 focus:ring-purple-700 focus:outline-none transition w-full"
+            className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-black"
             placeholderText="Select date"
             minDate={new Date()}
             required
           />
         </div>
         <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-gray-300">Time</label>
+          <label className="text-sm font-medium text-gray-700">Time</label>
           <DatePicker
             selected={time}
-            onChange={setTime}
+            onChange={(time) => setFormData({ ...formData, time })}
             showTimeSelect
             showTimeSelectOnly
             timeIntervals={15}
             timeCaption="Time"
             dateFormat="h:mm aa"
-            className="bg-neutral-800 border border-neutral-700 rounded-md p-2 text-white focus:ring-2 focus:ring-neon-green focus:outline-none transition w-full"
+            className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-black"
             placeholderText="Select time"
             required
           />
         </div>
-        <button
-          type="submit"
-          className="w-full bg-purple-700 hover:bg-neon-green text-white font-bold py-2 px-4 rounded transition border-2 border-neon-green"
-        >
-          Book Appointment
-        </button>
-      </form>
-      <style jsx global>{`
-        .text-neon-green { color: #39ff14; }
-        .bg-neon-green { background-color: #39ff14; }
-        .border-neon-green { border-color: #39ff14; }
-      `}</style>
+      </div>
     </div>
   );
 }
