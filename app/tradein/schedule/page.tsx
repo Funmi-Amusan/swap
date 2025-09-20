@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { AppointmentScheduler, AppointmentDetails, AppointmentFormData } from '../../../components/AppointmentScheduler';
 
-export default function SchedulePage() {
+function SchedulePageContent() {
     const [isStepValid, setIsStepValid] = useState(false);
     const [appointmentData, setAppointmentData] = useState<AppointmentDetails | null>(null);
     const [appointmentFormData, setAppointmentFormData] = useState<AppointmentFormData>({
@@ -77,4 +77,12 @@ export default function SchedulePage() {
       </div>
     </div>
   );
+}
+
+export default function SchedulePage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SchedulePageContent />
+        </Suspense>
+    )
 }
