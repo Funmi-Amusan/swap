@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import Select from 'react-select';
 
 const modelOptions = [
@@ -87,13 +88,14 @@ const modelOptions = [
   ];
 
   const customStyles = {
-    control: (provided: any) => ({
+    control: (provided: any, state: any) => ({
       ...provided,
-      backgroundColor: '#f9fafb',
+      backgroundColor: 'white',
       border: '1px solid #d1d5db',
       borderRadius: '0.5rem',
       padding: '0.35rem',
-      color: 'black',
+      minHeight: '42px',
+      boxShadow: state.isFocused ? '0 0 0 1px #3b82f6' : 'none',
       '&:hover': {
         borderColor: '#3b82f6',
       },
@@ -101,15 +103,36 @@ const modelOptions = [
     option: (provided: any, state: any) => ({
       ...provided,
       backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#eff6ff' : 'white',
-      color: state.isSelected ? 'white' : 'black',
+      color: state.isSelected ? 'white' : '#1f2937',
+      padding: '8px 12px',
     }),
     singleValue: (provided: any) => ({
         ...provided,
-        color: 'black',
+        color: '#1f2937',
+        fontSize: '16px',
+        fontWeight: '400',
+        lineHeight: '1.5',
+    }),
+    input: (provided: any) => ({
+        ...provided,
+        color: '#1f2937',
+        fontSize: '16px',
+    }),
+    valueContainer: (provided: any) => ({
+        ...provided,
+        padding: '8px',
+    }),
+    placeholder: (provided: any) => ({
+        ...provided,
+        color: '#9ca3af',
+        fontSize: '16px',
     }),
     menu: (provided: any) => ({
         ...provided,
         backgroundColor: 'white',
+        border: '1px solid #d1d5db',
+        borderRadius: '0.5rem',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
     }),
   };
 
@@ -132,6 +155,8 @@ export function IPhoneCalculator({
     setFormData: (data: TradeInFormData) => void;
     finalPrice: number;
 }) {
+    const [showBatteryTooltip, setShowBatteryTooltip] = useState(false);
+
     const handleChange = (field: string, value: string) => {
         setFormData({ ...formData, [field]: value });
     };
@@ -159,18 +184,6 @@ export function IPhoneCalculator({
                         onChange={(option) => handleSelectChange('model', option)}
                         styles={customStyles}
                         placeholder="Select iPhone Model"
-                    />
-                </div>
-
-                <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Battery Health</label>
-                    <Select
-                        instanceId="battery-select"
-                        options={batteryOptions}
-                        value={batteryOptions.find(option => option.value === formData.battery)}
-                        onChange={(option) => handleSelectChange('battery', option)}
-                        styles={customStyles}
-                        placeholder="Select Battery Health"
                     />
                 </div>
 
@@ -222,6 +235,41 @@ export function IPhoneCalculator({
                     />
                 </div>
 
+                <div className="relative">
+                    <div className="flex items-center mb-2">
+                        <label className="text-sm font-medium text-gray-700">Battery Health</label>
+                        <div className="relative ml-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowBatteryTooltip(!showBatteryTooltip)}
+                                className="w-4 h-4 rounded-full bg-gray-400 text-white text-xs flex items-center justify-center hover:bg-gray-500 transition-colors"
+                                aria-label="Battery health info"
+                            >
+                                i
+                            </button>
+                            {showBatteryTooltip && (
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-gray-800 text-white text-xs rounded-lg p-3 shadow-lg z-10">
+                                    <div className="mb-2 font-semibold">How to check battery health:</div>
+                                    <div className="space-y-1">
+                                        <div>• Go to Settings → Battery → Battery Health & Charging</div>
+                                        <div>• Look for "Maximum Capacity" percentage</div>
+                                        <div>• If you replaced the battery yourself, select "Changed"</div>
+                                    </div>
+                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <Select
+                        instanceId="battery-select"
+                        options={batteryOptions}
+                        value={batteryOptions.find(option => option.value === formData.battery)}
+                        onChange={(option) => handleSelectChange('battery', option)}
+                        styles={customStyles}
+                        placeholder="Select Battery Health"
+                    />
+                </div>
+
                 {isNewerModel && (
                     <div>
                         <label className="block mb-2 text-sm font-medium text-gray-700">SIM Type</label>
@@ -236,13 +284,6 @@ export function IPhoneCalculator({
                     </div>
                 )}
             </div>
-
-            {finalPrice > 0 && (
-                <div className="mt-6 text-center">
-                    <p className="text-lg font-semibold">Trade-in Value:</p>
-                    <p className="text-3xl font-bold text-green-600">₦{finalPrice.toLocaleString()}</p>
-                </div>
-            )}
         </div>
     );
 }

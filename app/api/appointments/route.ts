@@ -6,23 +6,27 @@ export async function POST(req: Request) {
     const data = await req.json();
     const {
       swapId,
-      userId,
       appointmentType,
       date,
       time,
+      contactName,
+      contactPhone,
+      contactEmail,
     } = data;
 
-    if (!swapId || !userId || !appointmentType || !date || !time) {
+    if (!swapId || !appointmentType || !date || !time) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const appointment = await prisma.appointment.create({
       data: {
         swapId,
-        userId,
         appointmentType,
         date: new Date(date),
         time,
+        contactName,
+        contactPhone,
+        contactEmail,
       },
     });
 
@@ -35,24 +39,21 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
+    const swapId = searchParams.get('swapId');
 
-    if (!userId) {
-        return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    if (!swapId) {
+        return NextResponse.json({ error: 'Swap ID is required' }, { status: 400 });
     }
 
     try {
-        const appointments = await prisma.appointment.findMany({
+        const appointment = await prisma.appointment.findUnique({
             where: {
-                userId: userId,
-            },
-            orderBy: {
-                createdAt: 'desc',
+                swapId: swapId,
             },
         });
-        return NextResponse.json(appointments);
+        return NextResponse.json(appointment);
     } catch (error) {
-        console.error('Error fetching appointments:', error);
+        console.error('Error fetching appointment:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

@@ -2,7 +2,222 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #ffffff;
-  color: #000000;
+/* Apple San Francisco Font System */
+@layer base {
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    background-color: #f5f5f7;
+    color: #1d1d1f;
+    line-height: 1.47058824;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+  }
+}
+
+/* Apple Design System Colors */
+:root {
+  --apple-blue: #007aff;
+  --apple-blue-dark: #0051d5;
+  --apple-gray: #8e8e93;
+  --apple-gray-light: #f2f2f7;
+  --apple-gray-dark: #636366;
+  --apple-black: #1d1d1f;
+  --apple-white: #ffffff;
+  --apple-green: #30d158;
+  --apple-red: #ff3b30;
+  --apple-orange: #ff9500;
+  --apple-background: #f5f5f7;
+  --apple-background-secondary: #ffffff;
+  --apple-separator: #c6c6c8;
+  --apple-fill: #f2f2f7;
+  --apple-text-primary: #1d1d1f;
+  --apple-text-secondary: #86868b;
+}
+
+/* Apple Typography System */
+.apple-title-large {
+  font-size: 40px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: 0em;
+}
+
+.apple-title {
+  font-size: 32px;
+  line-height: 1.125;
+  font-weight: 600;
+  letter-spacing: 0.004em;
+}
+
+.apple-headline {
+  font-size: 22px;
+  line-height: 1.27273;
+  font-weight: 600;
+  letter-spacing: 0.007em;
+}
+
+.apple-body {
+  font-size: 17px;
+  line-height: 1.47058824;
+  font-weight: 400;
+  letter-spacing: -0.022em;
+}
+
+.apple-subheadline {
+  font-size: 15px;
+  line-height: 1.33337;
+  font-weight: 400;
+  letter-spacing: -0.024em;
+}
+
+.apple-footnote {
+  font-size: 13px;
+  line-height: 1.38462;
+  font-weight: 400;
+  letter-spacing: -0.078em;
+}
+
+.apple-caption {
+  font-size: 12px;
+  line-height: 1.33337;
+  font-weight: 400;
+  letter-spacing: 0em;
+}
+
+/* Apple Component Styles */
+.apple-button-primary {
+  background-color: var(--apple-blue);
+  color: var(--apple-white);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 17px;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.apple-button-primary:hover {
+  background-color: var(--apple-blue-dark);
+  transform: translateY(-1px);
+}
+
+.apple-button-secondary {
+  background-color: var(--apple-gray-light);
+  color: var(--apple-blue);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 17px;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.apple-button-secondary:hover {
+  background-color: #e5e5ea;
+}
+
+.apple-card {
+  background-color: var(--apple-background-secondary);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--apple-separator);
+}
+
+.apple-input {
+  background-color: var(--apple-fill);
+  border: 1px solid var(--apple-separator);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 17px;
+  color: var(--apple-text-primary);
+  transition: all 0.2s ease;
+}
+
+.apple-input:focus {
+  outline: none;
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+}
+
+/* Apple spacing system */
+.apple-spacing-xs { margin: 4px; }
+.apple-spacing-sm { margin: 8px; }
+.apple-spacing-md { margin: 16px; }
+.apple-spacing-lg { margin: 24px; }
+.apple-spacing-xl { margin: 32px; }
+.apple-spacing-2xl { margin: 48px; }
+
+/* DatePicker Apple styling */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container input {
+  width: 100% !important;
+}
+
+.react-datepicker {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  border: 1px solid var(--apple-separator);
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.react-datepicker__header {
+  background-color: var(--apple-fill);
+  border-bottom: 1px solid var(--apple-separator);
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.react-datepicker__current-month {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--apple-text-primary);
+}
+
+.react-datepicker__day {
+  color: var(--apple-text-primary);
+  font-size: 15px;
+  border-radius: 6px;
+}
+
+.react-datepicker__day:hover {
+  background-color: var(--apple-blue);
+  color: white;
+}
+
+.react-datepicker__day--selected {
+  background-color: var(--apple-blue) !important;
+  color: white !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--apple-blue);
+  color: white;
+}
+
+.react-datepicker__time-container {
+  border-left: 1px solid var(--apple-separator);
+}
+
+.react-datepicker__time-list-item {
+  font-size: 15px;
+  padding: 8px 12px;
+}
+
+.react-datepicker__time-list-item:hover {
+  background-color: var(--apple-fill) !important;
+}
+
+.react-datepicker__time-list-item--selected {
+  background-color: var(--apple-blue) !important;
+  color: white !important;
 }

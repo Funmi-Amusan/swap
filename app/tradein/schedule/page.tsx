@@ -2,7 +2,6 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { AppointmentScheduler, AppointmentDetails, AppointmentFormData } from '../../../components/AppointmentScheduler';
 
 function SchedulePageContent() {
@@ -16,10 +15,9 @@ function SchedulePageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const swapId = searchParams.get('swapId');
-    const { data: session } = useSession();
 
     const handleNext = async () => {
-        if (!swapId || !session?.user?.id || !appointmentData) return;
+    if (!swapId || !appointmentData) return;
 
         try {
             const response = await fetch('/api/appointments', {
@@ -29,7 +27,6 @@ function SchedulePageContent() {
                 },
                 body: JSON.stringify({
                     swapId,
-                    userId: session.user.id,
                     appointmentType: appointmentData.appointmentType.label,
                     date: appointmentData.date,
                     time: appointmentData.time?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -51,27 +48,32 @@ function SchedulePageContent() {
     };
 
   return (
-    <div className="min-h-screen p-5 flex flex-col items-center justify-center">
-      <div className="w-full max-w-lg">
+    <div className="min-h-screen py-12 px-6">
+      <div className="max-w-lg mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="apple-title mb-2">Schedule Appointment</h1>
+          <p className="apple-body text-gray-600">Choose when we should inspect your device</p>
+        </div>
+        
         <AppointmentScheduler 
             formData={appointmentFormData}
             setFormData={setAppointmentFormData}
             onDataChange={setAppointmentData} 
             onValidationChange={setIsStepValid} 
         />
-        <div className="mt-8 flex justify-between">
+        <div className="flex gap-3 mt-8">
             <button 
                 onClick={handleBack}
-                className="bg-gray-200 hover:bg-gray-300 text-black font-bold py-3 px-4 rounded-lg transition duration-300"
+                className="apple-button-secondary flex-1"
             >
                 Back
             </button>
             <button 
                 onClick={handleNext}
                 disabled={!isStepValid}
-                className="bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="apple-button-primary flex-1 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
             >
-                Next: Confirm & Finish
+                Confirm & Finish
             </button>
         </div>
       </div>

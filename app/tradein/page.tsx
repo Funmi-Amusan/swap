@@ -1,9 +1,11 @@
 "use client";
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { IPhoneCalculator, TradeInFormData } from '../../components/iphone-calculator';
+import PhoneModelSelector from '../../components/PhoneModelSelector';
+import PhoneConditionSelector from '../../components/PhoneConditionSelector';
 import { NewPhoneSelector, NewPhoneFormData } from '../../components/NewPhoneSelector';
+import CalendlyWidget from '../../components/CalendlyWidget';
 
 const pricingData: any = {
     'x-64': { base: 150000, series: 'x' },
@@ -116,7 +118,7 @@ const pricingData: any = {
       backglass: { 'mint': 0, 'minor': 15000, 'broken': 30000 },
       screen: { 'mint': 0, 'changed': 100000, 'cracked': 130000 },
       body: { 'mint': 0, 'minor': 20000, 'dents': 30000 },
-      sim: { 'physical': 0, 'esim': 50000 }
+      sim: { 'physical': 0, 'Physical sim plus eSIM ': 50000 }
     },
     '14promax': {
       battery: { '90+': 0, '84-90': 10000, '79-84': 20000, '78-': 40000, 'changed': 30000 },
@@ -124,7 +126,7 @@ const pricingData: any = {
       backglass: { 'mint': 0, 'minor': 15000, 'broken': 30000 },
       screen: { 'mint': 0, 'changed': 140000, 'cracked': 180000 },
       body: { 'mint': 0, 'minor': 30000, 'dents': 40000 },
-      sim: { 'physical': 0, 'esim': 50000 }
+      sim: { 'physical': 0, 'Physical sim plus eSIM ': 50000 }
     },
     '15pro': {
       battery: { '90+': 0, '84-90': 15000, '79-84': 30000, '78-': 50000, 'changed': 40000 },
@@ -132,7 +134,7 @@ const pricingData: any = {
       backglass: { 'mint': 0, 'minor': 15000, 'broken': 30000 },
       screen: { 'mint': 0, 'changed': 200000, 'cracked': 250000 },
       body: { 'mint': 0, 'minor': 30000, 'dents': 40000 },
-      sim: { 'physical': 0, 'esim': 100000 }
+      sim: { 'physical': 0, 'Physical sim plus eSIM ': 100000 }
     },
     '16': {
       battery: { '90+': 0, '84-90': 15000, '79-84': 30000, '78-': 50000, 'changed': 40000 },
@@ -140,12 +142,12 @@ const pricingData: any = {
       backglass: { 'mint': 0, 'minor': 15000, 'broken': 30000 },
       screen: { 'mint': 0, 'changed': 200000, 'cracked': 250000 },
       body: { 'mint': 0, 'minor': 30000, 'dents': 40000 },
-      sim: { 'physical': 0, 'esim': 100000 }
+      sim: { 'physical': 0, 'Physical sim plus eSIM ': 100000 }
     }
   };
 
 const newPhoneDatabase: any = {
-    "Premium Used Grade A": {
+    "Used Premium Grade A": {
         "iPhone X": { "64GB": 135000, "256GB": 155000 },
         "iPhone XS": { "64GB": 160000, "256GB": 180000 },
         "iPhone XR": { "64GB": 155000, "128GB": 180000 },
@@ -163,14 +165,14 @@ const newPhoneDatabase: any = {
         "iPhone 14 Pro": { "128GB": 680000, "256GB": 720000 },
         "iPhone 14 Pro Max": { "128GB": 780000, "256GB": 820000, "512GB": 850000 },
     },
-    "Brand New (Non Active)": {
+    "New (sealed never opened)": {
         "iPhone 13": { "128GB": 520000 },
         "iPhone 15": { "128GB": 850000, "256GB": 950000 },
         "iPhone 15 Plus": { "128GB": 950000, "256GB": 1050000 },
         "iPhone 15 Pro": { "128GB": 1100000, "256GB": 1200000 },
         "iPhone 15 Pro Max": { "256GB": 1350000, "512GB": 1500000 },
     },
-    "Open Box Brand New": {
+    "New (opened but never used)": {
         "iPhone 15 Pro Max": { "256GB": 1250000 },
     }
 };
@@ -195,8 +197,12 @@ export default function TradeInPage() {
     storage: ''
   });
 
+  const [email, setEmail] = useState('');
+  const [swapMethod, setSwapMethod] = useState('');
+  const [showCalendly, setShowCalendly] = useState(false);
+  const [savedSwapId, setSavedSwapId] = useState<string>('');
+
   const router = useRouter();
-  const { data: session, status } = useSession();
 
   // ===== CALCULATIONS =====
   const tradeInPrice = useMemo(() => {
@@ -244,25 +250,38 @@ export default function TradeInPage() {
   }, []);
 
   const modelsForCategory = useMemo(() => {
-      if (!newPhoneFormData.category) return [];
+      if (!newPhoneFormData.category || !newPhoneDatabase[newPhoneFormData.category]) return [];
       return Object.keys(newPhoneDatabase[newPhoneFormData.category]).map(model => ({ value: model, label: model }));
   }, [newPhoneFormData.category]);
 
   const storageForModel = useMemo(() => {
-      if (!newPhoneFormData.model || !newPhoneDatabase[newPhoneFormData.category]?.[newPhoneFormData.model]) return [];
+      if (!newPhoneFormData.category || !newPhoneFormData.model || !newPhoneDatabase[newPhoneFormData.category]?.[newPhoneFormData.model]) return [];
       return Object.keys(newPhoneDatabase[newPhoneFormData.category][newPhoneFormData.model]).map(storage => ({ value: storage, label: storage }));
   }, [newPhoneFormData.category, newPhoneFormData.model]);
 
   // ===== VALIDATION =====
   const isStep1Valid = useMemo(() => {
-    const { model, battery, faceid, backglass, screen, body } = tradeInFormData;
-    return !!model && !!battery && !!faceid && !!backglass && !!screen && !!body;
+    const { model } = tradeInFormData;
+    return !!model;
   }, [tradeInFormData]);
 
   const isStep2Valid = useMemo(() => {
+    const { battery, faceid, backglass, screen, body } = tradeInFormData;
+    return !!battery && !!faceid && !!backglass && !!screen && !!body;
+  }, [tradeInFormData]);
+
+  const isStep3Valid = useMemo(() => {
     const { category, model, storage } = newPhoneFormData;
     return !!category && !!model && !!storage;
   }, [newPhoneFormData]);
+
+  const isStep4Valid = useMemo(() => {
+    return !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }, [email]);
+
+  const isStep5Valid = useMemo(() => {
+    return !!swapMethod;
+  }, [swapMethod]);
 
   // ===== EFFECTS =====
   useEffect(() => {
@@ -294,11 +313,7 @@ export default function TradeInPage() {
 
   const handleSaveSwap = async () => {
     console.log('handleSaveSwap called');
-    if (!session?.user?.id || !isStep1Valid || !isStep2Valid) {
-      console.log('Save aborted due to invalid data or session');
-      console.log('isStep1Valid:', isStep1Valid);
-      console.log('isStep2Valid:', isStep2Valid);
-      console.log('session:', !!session?.user?.id);
+    if (!isStep1Valid || !isStep2Valid || !isStep3Valid || !isStep4Valid || !isStep5Valid) {
       return;
     }
     setIsSaving(true);
@@ -310,9 +325,10 @@ export default function TradeInPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: session.user.id,
           tradeInPhone: tradeInFormData,
           newPhone: newPhoneFormData,
+          contactEmail: email,
+          swapMethod: swapMethod,
           tradeInValue: tradeInPrice,
           newPhonePrice: newPhonePrice,
           amountToPay: amountToPay,
@@ -321,7 +337,8 @@ export default function TradeInPage() {
 
       if (response.ok) {
         const swap = await response.json();
-        router.push(`/tradein/schedule?swapId=${swap.id}`);
+        setSavedSwapId(swap.id);
+        setShowCalendly(true);
       } else {
         console.error('Failed to save swap');
       }
@@ -332,37 +349,83 @@ export default function TradeInPage() {
     }
   };
 
-  if (status === 'loading') {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
 
-  if (status === 'unauthenticated') {
-    router.push('/signin');
-    return null;
-  }
 
   return (
-    <div className="min-h-screen p-5 flex flex-col items-center justify-center">
-      
-      <div className="w-full max-w-md">
+    <div className="min-h-screen py-12 px-6">
+      <div className="max-w-lg mx-auto">
+        {/* Progress Indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            {[1, 2, 3, 4].map((stepNumber) => (
+              <div key={stepNumber} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 ${
+                  step >= stepNumber 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-200 text-gray-500'
+                }`}>
+                  {stepNumber}
+                </div>
+                {stepNumber < 4 && (
+                  <div className={`w-16 h-0.5 mx-2 transition-all duration-200 ${
+                    step > stepNumber ? 'bg-blue-600' : 'bg-gray-200'
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <p className="apple-footnote text-gray-500">
+              {step === 1 && "Step 1 of 5: Phone Model"}
+              {step === 2 && "Step 2 of 5: Phone Condition"}
+              {step === 3 && "Step 3 of 5: Select New Phone"}
+              {step === 4 && "Step 4 of 5: Swap Summary"}
+              {step === 5 && "Step 5 of 5: Choose Swap Method"}
+            </p>
+          </div>
+        </div>
+
         {step === 1 && (
           <div>
-            <IPhoneCalculator 
+            <PhoneModelSelector 
               formData={tradeInFormData}
               setFormData={setTradeInFormData}
-              finalPrice={tradeInPrice}
             />
             <button 
               onClick={handleNextStep}
               disabled={!isStep1Valid}
-              className="w-full mt-6 bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="apple-button-primary w-full mt-6 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Next
+              Continue
             </button>
           </div>
         )}
 
         {step === 2 && (
+          <div>
+            <PhoneConditionSelector 
+              formData={tradeInFormData}
+              setFormData={setTradeInFormData}
+            />
+            <div className="flex gap-3 mt-6">
+              <button 
+                onClick={handlePrevStep}
+                className="apple-button-secondary flex-1"
+              >
+                Back
+              </button>
+              <button 
+                onClick={handleNextStep}
+                disabled={!isStep2Valid}
+                className="apple-button-primary flex-1 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
           <div>
             <NewPhoneSelector 
               formData={newPhoneFormData}
@@ -372,60 +435,195 @@ export default function TradeInPage() {
               modelsForCategory={modelsForCategory}
               storageForModel={storageForModel}
             />
-            <div className="flex justify-between mt-6">
+            <div className="flex gap-3 mt-6">
               <button 
                 onClick={handlePrevStep}
-                className="bg-gray-200 hover:bg-gray-300 text-black font-bold py-3 px-4 rounded-lg transition duration-300"
+                className="apple-button-secondary flex-1"
               >
                 Back
               </button>
               <button 
                 onClick={handleNextStep}
-                disabled={!isStep2Valid}
-                className="bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={!isStep3Valid}
+                className="apple-button-primary flex-1 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
               >
-                See Summary
+                Get Swap Price
               </button>
             </div>
           </div>
         )}
 
-        {step === 3 && (
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">Swap Summary</h2>
-            <div className="space-y-4 text-lg">
-              <div className="flex justify-between">
-                <span>New Phone Price:</span>
-                <span className="font-semibold">₦{newPhonePrice.toLocaleString() ?? 0}</span>
+        {step === 4 && (
+          <div className="apple-card">
+            <div className="text-center mb-6">
+              <h2 className="apple-title mb-2">Swap Summary</h2>
+              <p className="apple-body text-gray-600">Review your swap details and pricing breakdown</p>
+            </div>
+            
+            <div className="space-y-6 mb-8">
+              {/* Enthusiastic Price Display */}
+              <div className="text-center bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border-2 border-green-200">
+                <div className="mb-4">
+                  <h3 className="apple-title text-gray-900 mb-2">Your Swap Quote</h3>
+                  <p className="apple-body text-gray-700">
+                    Here's what you'll need to complete your phone upgrade:
+                  </p>
+                </div>
+                
+                <div className="mb-4">
+                  <div className="apple-display text-blue-600 font-bold mb-2">
+                    ₦{(amountToPay - 20000).toLocaleString()} - ₦{(amountToPay + 20000).toLocaleString()}
+                  </div>
+                  <p className="apple-footnote text-gray-600">
+                    Final amount may vary based on device inspection
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-lg p-4 mb-4">
+                  <p className="apple-body text-gray-800 font-medium">
+                    Your {modelsForCategory.find((m: any) => m.value === newPhoneFormData.model)?.label || 'selected phone'} is almost within reach! 
+                  </p>
+                  <p className="apple-footnote text-gray-600 mt-2">
+                    Complete the swap process to get your hands on this incredible upgrade.
+                  </p>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span>Trade-in Value:</span>
-                <span className="font-semibold text-green-600">- ₦{tradeInPrice.toLocaleString() ?? 0}</span>
-              </div>
-              <hr className="border-gray-200"/>
-              <div className="flex justify-between text-2xl font-bold">
-                <span>Amount to Pay:</span>
-                <span className="text-black">₦{amountToPay.toLocaleString()}</span>
+
+              {/* Email Input */}
+              <div>
+                <label className="apple-subheadline font-medium text-gray-900 mb-3 block">
+                  Email Address
+                </label>
+                <p className="apple-footnote text-gray-500 mb-3">
+                  We'll send you the swap breakdown and next steps
+                </p>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white apple-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                />
               </div>
             </div>
-            <div className="flex justify-between mt-8">
+            
+            <div className="flex gap-3">
               <button 
                 onClick={handlePrevStep}
-                className="bg-gray-200 hover:bg-gray-300 text-black font-bold py-3 px-4 rounded-lg transition duration-300"
+                className="apple-button-secondary flex-1"
+              >
+                Back
+              </button>
+              <button 
+                onClick={handleNextStep}
+                disabled={!isStep4Valid}
+                className="apple-button-primary flex-1 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 5 && (
+          <div className="apple-card">
+            <div className="text-center mb-6">
+              <h2 className="apple-title mb-2">Choose Swap Method</h2>
+              <p className="apple-body text-gray-600">How would you like to complete your trade-in?</p>
+            </div>
+            
+            <div className="space-y-4 mb-8">
+              <button
+                type="button"
+                onClick={() => setSwapMethod('online')}
+                className={`w-full p-6 rounded-xl border-2 text-left transition-all duration-200 ${
+                  swapMethod === 'online'
+                    ? 'border-blue-600 bg-blue-50'
+                    : 'border-gray-300 bg-white hover:border-gray-400'
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="apple-headline text-gray-900 mb-2">Online Swap</h3>
+                    <p className="apple-body text-gray-600 mb-3">Expert check, dispatch pick up</p>
+                    <ul className="apple-footnote text-gray-500 space-y-1">
+                      <li>• Professional device inspection</li>
+                      <li>• Free pickup from your location</li>
+                      <li>• Secure packaging provided</li>
+                      <li>• 24-48 hour processing</li>
+                    </ul>
+                  </div>
+                  {swapMethod === 'online' && (
+                    <div className="ml-4">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSwapMethod('in-person')}
+                className={`w-full p-6 rounded-xl border-2 text-left transition-all duration-200 ${
+                  swapMethod === 'in-person'
+                    ? 'border-blue-600 bg-blue-50'
+                    : 'border-gray-300 bg-white hover:border-gray-400'
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="apple-headline text-gray-900 mb-2">In Person Swap</h3>
+                    <p className="apple-body text-gray-600 mb-3">Visit our store location</p>
+                    <ul className="apple-footnote text-gray-500 space-y-1">
+                      <li>• Immediate device inspection</li>
+                      <li>• Face-to-face service</li>
+                      <li>• Instant trade completion</li>
+                      <li>• Same-day device exchange</li>
+                    </ul>
+                  </div>
+                  {swapMethod === 'in-person' && (
+                    <div className="ml-4">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </button>
+            </div>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={handlePrevStep}
+                className="apple-button-secondary flex-1"
               >
                 Back
               </button>
               <button 
                 onClick={handleSaveSwap}
-                disabled={isSaving || !isStep1Valid || !isStep2Valid}
-                className="bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={isSaving || !isStep1Valid || !isStep2Valid || !isStep3Valid || !isStep4Valid || !isStep5Valid}
+                className="apple-button-primary flex-1 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
               >
-                {isSaving ? 'Saving...' : 'Schedule Appointment'}
+                {isSaving ? 'Processing...' : 'Complete Swap'}
               </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* Calendly Widget Modal */}
+      <CalendlyWidget
+        isOpen={showCalendly}
+        onClose={() => {
+          setShowCalendly(false);
+          // Redirect to confirmation page with swapId
+          router.push(`/tradein/confirm?swapId=${savedSwapId}`);
+        }}
+        swapId={savedSwapId}
+        swapMethod={swapMethod}
+      />
     </div>
   );
 }

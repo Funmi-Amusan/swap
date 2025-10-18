@@ -1,13 +1,12 @@
 "use client";
 
+
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 interface Appointment {
     id: string;
     swapId: string;
-    userId: string;
     appointmentType: string;
     date: string;
     time: string;
@@ -15,60 +14,129 @@ interface Appointment {
     updatedAt: string;
 }
 
+interface Swap {
+    id: string;
+    tradeInPhone: any;
+    newPhone: any;
+    tradeInValue: number;
+    newPhonePrice: number;
+    amountToPay: number;
+    createdAt: string;
+    appointment: Appointment | null;
+}
+
+import { useRouter, useSearchParams } from 'next/navigation';
+
 export default function ConfirmPage() {
-    const [appointment, setAppointment] = useState<Appointment | null>(null);
+    const [swap, setSwap] = useState<Swap | null>(null);
     const [loading, setLoading] = useState(true);
-    const { data: session } = useSession();
+    const searchParams = useSearchParams();
+    const swapId = searchParams.get('swapId');
 
     useEffect(() => {
-        const fetchLatestAppointment = async () => {
-            if (session?.user?.id) {
+        const fetchSwapData = async () => {
+            if (swapId) {
                 try {
-                    const response = await fetch(`/api/appointments?userId=${session.user.id}`);
+                    const response = await fetch(`/api/swaps?swapId=${swapId}`);
                     if (response.ok) {
-                        const apps = await response.json();
-                        if (apps.length > 0) {
-                            setAppointment(apps[0]);
-                        }
+                        const swapData = await response.json();
+                        setSwap(swapData);
+                    } else {
+                        console.error('Failed to fetch swap data');
                     }
                 } catch (error) {
-                    console.error('Failed to fetch appointment', error);
+                    console.error('Failed to fetch swap data', error);
                 } finally {
                     setLoading(false);
                 }
+            } else {
+                setLoading(false);
             }
         };
-
-        if (session) {
-            fetchLatestAppointment();
-        } else if (session === null) {
-            setLoading(false);
-        }
-    }, [session]);
+        fetchSwapData();
+    }, [swapId]);
 
   return (
-    <div className="min-h-screen p-5 flex flex-col items-center justify-center">
-      <div className="w-full max-w-lg bg-white border border-gray-200 rounded-2xl shadow-lg p-8 text-center">
-        <h1 className="text-2xl font-bold text-black mb-4">Swap Request Submitted!</h1>
-        <p className="text-green-600 font-semibold mb-2">Thank you for using SWAPPED.</p>
-        <p className="text-gray-500 mb-6">We have received your request and will send you an email to confirm your appointment. The price is not final until we complete our inspections</p>
-        
-        {loading ? (
-            <p>Loading appointment details...</p>
-        ) : appointment ? (
-            <div className="text-left my-6 p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-bold text-lg mb-2">Your Appointment Details:</h3>
-                <p><strong>Type:</strong> {appointment.appointmentType}</p>
-                <p><strong>Date:</strong> {new Date(appointment.date).toLocaleDateString()}</p>
-                <p><strong>Time:</strong> {appointment.time}</p>
+    <div className="min-h-screen py-12 px-6">
+      <div className="max-w-lg mx-auto">
+        <div className="apple-card text-center">
+          <div className="mb-6">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
             </div>
-        ) : (
-            <p>Could not retrieve appointment details.</p>
-        )}
+            <h1 className="apple-title mb-2">Trade-in Submitted!</h1>
+            <p className="apple-body text-green-600 font-medium mb-2">Thank you for choosing SWAPPED</p>
+            <p className="apple-body text-gray-600">We've received your request and will send you an email to confirm your appointment. The final price will be determined after our inspection.</p>
+          </div>
+          
+          {loading ? (
+              <div className="flex items-center justify-center my-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-3 apple-body text-gray-600">Loading swap details...</span>
+              </div>
+          ) : swap ? (
+              <div className="space-y-6 my-8">
+                {/* Swap Summary */}
+                <div className="p-6 bg-gray-50 rounded-xl text-left">
+                  <h3 className="apple-headline mb-4">Swap Summary</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="apple-body text-gray-600">Trade-in Value:</span>
+                      <span className="apple-body font-medium">₦{swap.tradeInValue.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="apple-body text-gray-600">New Phone Price:</span>
+                      <span className="apple-body font-medium">₦{swap.newPhonePrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-3">
+                      <span className="apple-body text-gray-900 font-medium">Amount to Pay:</span>
+                      <span className="apple-body font-bold text-blue-600">₦{swap.amountToPay.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
 
-        <Link href="/tradein" legacyBehavior>
-          <a className="bg-black hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-lg transition duration-300">Start New Trade-in</a>
-        </Link>
+                {/* Appointment Details (if scheduled) */}
+                {swap.appointment && (
+                  <div className="p-6 bg-green-50 rounded-xl text-left">
+                    <h3 className="apple-headline mb-4">Appointment Scheduled</h3>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="apple-body text-gray-600">Type:</span>
+                        <span className="apple-body font-medium">{swap.appointment.appointmentType}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="apple-body text-gray-600">Date:</span>
+                        <span className="apple-body font-medium">{new Date(swap.appointment.date).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="apple-body text-gray-600">Time:</span>
+                        <span className="apple-body font-medium">{swap.appointment.time}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Contact Information */}
+                {swap.tradeInPhone.contactEmail && (
+                  <div className="p-4 bg-blue-50 rounded-xl">
+                    <p className="apple-footnote text-blue-800">
+                      We'll send updates to: <strong>{swap.tradeInPhone.contactEmail}</strong>
+                    </p>
+                  </div>
+                )}
+              </div>
+          ) : (
+              <div className="my-8 p-6 bg-yellow-50 rounded-xl">
+                <p className="apple-body text-yellow-800">Could not retrieve swap details at this time.</p>
+              </div>
+          )}
+
+          <Link href="/tradein" legacyBehavior>
+            <a className="apple-button-primary inline-block">Start New Trade-in</a>
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -45,53 +45,62 @@ export function AppointmentScheduler({
 
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white border border-gray-200 rounded-2xl shadow-lg p-6 text-black font-sans">
-        <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold">Schedule Appointment</h1>
-            <p className="text-gray-500 text-sm">Select a date and time for your appointment.</p>
-        </div>
-      <div className="space-y-5">
-        <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-gray-700">Appointment Type</label>
+    <div className="apple-card">
+      <div className="space-y-6">
+        <div>
+          <label className="apple-subheadline font-medium text-gray-900 mb-3 block">Appointment Type</label>
           <Listbox value={appointmentType} onChange={(value) => setFormData({ ...formData, appointmentType: value })}>
-            <Listbox.Button className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-black text-left flex justify-between items-center">
-              {appointmentType.label}
-              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              </span>
-            </Listbox.Button>
-            <Listbox.Options className="mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
-              {appointmentTypes.map((type) => (
-                <Listbox.Option key={type.value} value={type} className={({ active }) => `cursor-pointer select-none p-2 ${active ? 'bg-blue-500 text-white' : 'text-black'}`}>
-                  {type.label}
-                </Listbox.Option>
-              ))}
-            </Listbox.Options>
+            <div className="relative">
+              <Listbox.Button className="apple-input w-full text-left flex justify-between items-center">
+                <span className="apple-body">{appointmentType.label}</span>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </Listbox.Button>
+              <Listbox.Options className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-auto">
+                {appointmentTypes.map((type) => (
+                  <Listbox.Option 
+                    key={type.value} 
+                    value={type} 
+                    className={({ active, selected }) => 
+                      `cursor-pointer select-none p-4 apple-body ${
+                        active ? 'bg-blue-50 text-blue-600' : 'text-gray-900'
+                      } ${selected ? 'bg-blue-600 text-white' : ''}`
+                    }
+                  >
+                    {type.label}
+                  </Listbox.Option>
+                ))}
+              </Listbox.Options>
+            </div>
           </Listbox>
         </div>
-        <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-gray-700">Date</label>
+        
+        <div>
+          <label className="apple-subheadline font-medium text-gray-900 mb-3 block">Date</label>
           <DatePicker
             selected={date}
             onChange={(date) => setFormData({ ...formData, date })}
             dateFormat="MMMM d, yyyy"
-            className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-black"
-            placeholderText="Select date"
+            className="apple-input w-full"
+            placeholderText="Select appointment date"
             minDate={new Date()}
             required
           />
         </div>
-        <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-gray-700">Time</label>
+        
+        <div>
+          <label className="apple-subheadline font-medium text-gray-900 mb-3 block">Time</label>
           <DatePicker
             selected={time}
             onChange={(time) => setFormData({ ...formData, time })}
             showTimeSelect
             showTimeSelectOnly
-            timeIntervals={15}
+            timeIntervals={30}
             timeCaption="Time"
             dateFormat="h:mm aa"
-            className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-black"
-            placeholderText="Select time"
+            className="apple-input w-full"
+            placeholderText="Select appointment time"
             required
           />
         </div>
