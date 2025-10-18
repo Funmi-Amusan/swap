@@ -1,7 +1,6 @@
 "use client";
 
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 
 interface Appointment {
@@ -27,7 +26,7 @@ interface Swap {
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ConfirmPage() {
+function ConfirmPageContent() {
     const [swap, setSwap] = useState<Swap | null>(null);
     const [loading, setLoading] = useState(true);
     const searchParams = useSearchParams();
@@ -139,5 +138,13 @@ export default function ConfirmPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ConfirmPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ConfirmPageContent />
+    </Suspense>
   );
 }
