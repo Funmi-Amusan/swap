@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface Appointment {
     id: string;
@@ -23,8 +24,6 @@ interface Swap {
     createdAt: string;
     appointment: Appointment | null;
 }
-
-import { useRouter, useSearchParams } from 'next/navigation';
 
 function ConfirmPageContent() {
     const [swap, setSwap] = useState<Swap | null>(null);

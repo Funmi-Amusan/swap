@@ -64,6 +64,7 @@ const customStyles = {
 
 export interface TradeInFormData {
     model: string;
+    storage: string;
     battery: string;
     faceid: string;
     backglass: string;
@@ -99,7 +100,21 @@ export default function PhoneModelSelector({ formData, setFormData, onSelect }: 
     }, []);
 
     const handleSelectChange = (field: string, option: any) => {
-        setFormData({ ...formData, [field]: option ? option.value : '' });
+        if (field === 'model' && option) {
+            // Extract storage from model value (e.g., "15pro-256" -> "256")
+            const modelValue = option.value;
+            const parts = modelValue.split('-');
+            const storage = parts.length > 1 ? parts[parts.length - 1] : '';
+            
+            setFormData({ 
+                ...formData, 
+                model: modelValue,
+                storage: storage
+            });
+        } else {
+            setFormData({ ...formData, [field]: option ? option.value : '' });
+        }
+        
         if (option && onSelect) {
             onSelect();
         }

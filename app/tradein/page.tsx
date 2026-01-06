@@ -95,6 +95,7 @@ export default function TradeInPage() {
 
   interface TradeInFormData {
     model: string;
+    storage: string;
     battery: string;
     faceid: string;
     backglass: string;
@@ -105,6 +106,7 @@ export default function TradeInPage() {
 
   const [tradeInFormData, setTradeInFormData] = useState<TradeInFormData>({
     model: '',
+    storage: '',
     battery: '',
     faceid: '',
     backglass: '',
