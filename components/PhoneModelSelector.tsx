@@ -115,6 +115,7 @@ export default function PhoneModelSelector({ formData, setFormData, onSelect }: 
             setFormData({ ...formData, [field]: option ? option.value : '' });
         }
         
+        setFormData({ ...formData, [field]: option ? option.value : '' });
         if (option && onSelect) {
             onSelect();
         }
