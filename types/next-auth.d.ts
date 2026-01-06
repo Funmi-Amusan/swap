@@ -6,8 +6,19 @@ declare module "next-auth" {
    */
   interface Session {
     user: {
-      /** The user's postal address. */
       id: string;
+      isAdmin: boolean;
     } & DefaultSession["user"]
+  }
+
+  interface User {
+    isAdmin?: boolean;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    isAdmin?: boolean;
   }
 }

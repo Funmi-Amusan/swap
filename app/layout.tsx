@@ -2,6 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Image from "next/image";
 import Link from "next/link";
+import { AuthProvider } from "./providers";
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter'
+});
 
 export const metadata: Metadata = {
   title: "Swapped",
@@ -17,9 +25,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        <header className="py-6 px-6 bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50">
+    <html lang="en" className={inter.variable}>
+      <body className={inter.className}>
+        <AuthProvider>
+        {/* <header className="py-6 px-6 bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <Link href="/" className="flex items-center gap-3">
               <Image
@@ -39,8 +48,9 @@ export default function RootLayout({
               </Link>
             </nav>
           </div>
-        </header>
+        </header> */}
         <main className="min-h-screen bg-gray-50">{children}</main>
+        </AuthProvider>
       </body>
     </html>
   );

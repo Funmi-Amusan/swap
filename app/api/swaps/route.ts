@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import { sendSwapConfirmationEmail } from '@/app/lib/email';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -59,6 +60,26 @@ export async function POST(req: Request) {
         amountToPay,
       },
     });
+
+    // Send confirmation email
+    if (contactEmail) {
+      try {
+        await sendSwapConfirmationEmail({
+          to: contactEmail,
+          swapDetails: {
+            tradeInPhone,
+            newPhone,
+            tradeInValue,
+            newPhonePrice,
+            amountToPay,
+            swapMethod: swapMethod || 'online',
+          },
+        });
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json(swap, { status: 201 });
   } catch (error) {

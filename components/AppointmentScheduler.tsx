@@ -1,20 +1,24 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { Listbox } from '@headlessui/react';
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format } from "date-fns";
+import { CalendarIcon, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface AppointmentDetails {
     appointmentType: { value: string; label: string; };
     date: Date | null;
-    time: Date | null;
+    time: string | null;
 }
 
 export interface AppointmentFormData {
     appointmentType: { value: string; label: string; };
     date: Date | null;
-    time: Date | null;
+    time: string | null;
 }
 
 export function AppointmentScheduler({ 
@@ -33,6 +37,13 @@ export function AppointmentScheduler({
     { value: 'dispatch_pickup', label: 'Dispatch Pickup' },
     { value: 'walk_in', label: 'Walk-in Customer' },
   ];
+
+  const timeSlots = [
+    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+    '15:00', '15:30', '16:00', '16:30', '17:00'
+  ];
+
   const { appointmentType, date, time } = formData;
 
   useEffect(() => {
@@ -43,67 +54,101 @@ export function AppointmentScheduler({
     }
   }, [appointmentType, date, time, onValidationChange, onDataChange]);
 
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    setFormData({
+      ...formData,
+      date: selectedDate || null
+    });
+  };
+
+  const handleTimeSelect = (selectedTime: string) => {
+    setFormData({
+      ...formData,
+      time: selectedTime
+    });
+  };
+
+  const handleTypeSelect = (value: string) => {
+    const selectedType = appointmentTypes.find(type => type.value === value);
+    if (selectedType) {
+      setFormData({
+        ...formData,
+        appointmentType: selectedType
+      });
+    }
+  };
 
   return (
-    <div className="apple-card">
-      <div className="space-y-6">
-        <div>
-          <label className="apple-subheadline font-medium text-gray-900 mb-3 block">Appointment Type</label>
-          <Listbox value={appointmentType} onChange={(value) => setFormData({ ...formData, appointmentType: value })}>
-            <div className="relative">
-              <Listbox.Button className="apple-input w-full text-left flex justify-between items-center">
-                <span className="apple-body">{appointmentType.label}</span>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </Listbox.Button>
-              <Listbox.Options className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-auto">
-                {appointmentTypes.map((type) => (
-                  <Listbox.Option 
-                    key={type.value} 
-                    value={type} 
-                    className={({ active, selected }) => 
-                      `cursor-pointer select-none p-4 apple-body ${
-                        active ? 'bg-blue-50 text-blue-600' : 'text-gray-900'
-                      } ${selected ? 'bg-blue-600 text-white' : ''}`
-                    }
-                  >
-                    {type.label}
-                  </Listbox.Option>
-                ))}
-              </Listbox.Options>
+    <div className="space-y-6">
+      {/* Appointment Type */}
+      <div className="space-y-3">
+        <label className="text-base font-semibold text-black">
+          Appointment Type
+        </label>
+        <Select value={appointmentType?.value} onValueChange={handleTypeSelect}>
+          <SelectTrigger className="w-full h-12 border-2 border-gray-200 rounded-xl bg-white hover:border-gray-300 focus:border-black transition-colors text-base">
+            <SelectValue placeholder="Select appointment type" />
+          </SelectTrigger>
+          <SelectContent>
+            {appointmentTypes.map((type) => (
+              <SelectItem key={type.value} value={type.value} className="text-base">
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Date Selection */}
+      <div className="space-y-3">
+        <label className="text-base font-semibold text-black">
+          Select Date
+        </label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full h-12 border-2 border-gray-200 rounded-xl bg-white hover:border-gray-300 focus:border-black transition-colors justify-start text-left font-normal text-base",
+                !date && "text-gray-500"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {date ? format(date, "PPP") : "Pick a date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={date || undefined}
+              onSelect={handleDateSelect}
+              disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* Time Selection */}
+      <div className="space-y-3">
+        <label className="text-base font-semibold text-black">
+          Select Time
+        </label>
+        <Select value={time || ""} onValueChange={handleTimeSelect}>
+          <SelectTrigger className="w-full h-12 border-2 border-gray-200 rounded-xl bg-white hover:border-gray-300 focus:border-black transition-colors text-base">
+            <div className="flex items-center">
+              <Clock className="mr-2 h-4 w-4 text-gray-500" />
+              <SelectValue placeholder="Select time" />
             </div>
-          </Listbox>
-        </div>
-        
-        <div>
-          <label className="apple-subheadline font-medium text-gray-900 mb-3 block">Date</label>
-          <DatePicker
-            selected={date}
-            onChange={(date) => setFormData({ ...formData, date })}
-            dateFormat="MMMM d, yyyy"
-            className="apple-input w-full"
-            placeholderText="Select appointment date"
-            minDate={new Date()}
-            required
-          />
-        </div>
-        
-        <div>
-          <label className="apple-subheadline font-medium text-gray-900 mb-3 block">Time</label>
-          <DatePicker
-            selected={time}
-            onChange={(time) => setFormData({ ...formData, time })}
-            showTimeSelect
-            showTimeSelectOnly
-            timeIntervals={30}
-            timeCaption="Time"
-            dateFormat="h:mm aa"
-            className="apple-input w-full"
-            placeholderText="Select appointment time"
-            required
-          />
-        </div>
+          </SelectTrigger>
+          <SelectContent>
+            {timeSlots.map((slot) => (
+              <SelectItem key={slot} value={slot} className="text-base">
+                {slot}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

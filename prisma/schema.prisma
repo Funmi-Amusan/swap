@@ -64,6 +64,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  isAdmin       Boolean   @default(false)
   Account       Account[]
   Session       Session[]
 }
@@ -74,4 +75,72 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Admin Configuration Models
+model PhoneModel {
+  id        String   @id @default(cuid())
+  label     String // e.g., "iPhone 15 Pro 256GB"
+  value     String   @unique // e.g., "15pro-256"
+  model     String // e.g., "iPhone 15 Pro"
+  storage   String // e.g., "256GB"
+  basePrice Float // Base price for this model
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PhoneCondition {
+  id            String   @id @default(cuid())
+  label         String // e.g., "Like New"
+  value         String   @unique // e.g., "like-new"
+  description   String? // e.g., "No visible damage"
+  priceModifier Float    @default(1.0) // 1.0 = no change, 0.8 = 20% discount
+  isActive      Boolean  @default(true)
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PricingRule {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  baseModel       String // which phone model(s) this applies to
+  condition       String? // which condition(s) this applies to
+  priceAdjustment Float // +/- amount or percentage
+  isPercentage    Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Multi-factor condition attributes for granular pricing
+model ConditionAttributeGroup {
+  id          String                     @id @default(cuid())
+  key         String                     @unique // e.g., "battery", "faceid", "screen", "backglass", "body", "sim"
+  label       String // Human-friendly label for UI sections
+  description String?
+  isActive    Boolean                    @default(true)
+  order       Int                        @default(0)
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+  options     ConditionAttributeOption[]
+}
+
+model ConditionAttributeOption {
+  id            String                  @id @default(cuid())
+  groupId       String
+  group         ConditionAttributeGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  value         String // e.g., "90+", "not-working"
+  label         String // e.g., "90% and above", "No Face ID"
+  description   String?
+  priceModifier Float                   @default(1.0)
+  isActive      Boolean                 @default(true)
+  order         Int                     @default(0)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@unique([groupId, value])
 }

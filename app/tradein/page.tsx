@@ -1,10 +1,10 @@
 "use client";
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { IPhoneCalculator, TradeInFormData } from '../../components/iphone-calculator';
 import PhoneModelSelector from '../../components/PhoneModelSelector';
-import PhoneConditionSelector from '../../components/PhoneConditionSelector';
-import { NewPhoneSelector, NewPhoneFormData } from '../../components/NewPhoneSelector';
+import SingleConditionQuestion from '../../components/SingleConditionQuestion';
+import SingleDropdownQuestion from '../../components/SingleDropdownQuestion';
+import { NewPhoneFormData } from '../../components/NewPhoneSelector';
 import CalendlyWidget from '../../components/CalendlyWidget';
 
 const pricingData: any = {
@@ -55,97 +55,6 @@ const pricingData: any = {
     '16-512': { base: 1050000, series: '16' }
   };
 
-  const deductionRules:any = {
-    'x': {
-      battery: { '90+': 0, '84-90': 5000, '79-84': 10000, '78-': 20000, 'changed': 30000 },
-      faceid: { 'working': 0, 'not-working': 50000 },
-      backglass: { 'mint': 0, 'minor': 5000, 'broken': 15000 },
-      screen: { 'mint': 0, 'changed': 20000, 'cracked': 35000 },
-      body: { 'mint': 0, 'minor': 10000, 'dents': 15000 }
-    },
-    'xsmax': {
-      battery: { '90+': 0, '84-90': 5000, '79-84': 10000, '78-': 20000, 'changed': 20000 },
-      faceid: { 'working': 0, 'not-working': 60000 },
-      backglass: { 'mint': 0, 'minor': 10000, 'broken': 15000 },
-      screen: { 'mint': 0, 'changed': 30000, 'cracked': 50000 },
-      body: { 'mint': 0, 'minor': 10000, 'dents': 20000 }
-    },
-    '11': {
-      battery: { '90+': 0, '84-90': 5000, '79-84': 10000, '78-': 20000, 'changed': 30000 },
-      faceid: { 'working': 0, 'not-working': 50000 },
-      backglass: { 'mint': 0, 'minor': 5000, 'broken': 15000 },
-      screen: { 'mint': 0, 'changed': 30000, 'cracked': 40000 },
-      body: { 'mint': 0, 'minor': 10000, 'dents': 15000 }
-    },
-    '11promax': {
-      battery: { '90+': 0, '84-90': 5000, '79-84': 10000, '78-': 25000, 'changed': 20000 },
-      faceid: { 'working': 0, 'not-working': 75000 },
-      backglass: { 'mint': 0, 'minor': 10000, 'broken': 15000 },
-      screen: { 'mint': 0, 'changed': 30000, 'cracked': 50000 },
-      body: { 'mint': 0, 'minor': 10000, 'dents': 20000 }
-    },
-    '12': {
-      battery: { '90+': 0, '84-90': 5000, '79-84': 10000, '78-': 25000, 'changed': 30000 },
-      faceid: { 'working': 0, 'not-working': 80000 },
-      backglass: { 'mint': 0, 'minor': 10000, 'broken': 15000 },
-      screen: { 'mint': 0, 'changed': 30000, 'cracked': 50000 },
-      body: { 'mint': 0, 'minor': 10000, 'dents': 20000 }
-    },
-    '12promax': {
-      battery: { '90+': 0, '84-90': 5000, '79-84': 10000, '78-': 25000, 'changed': 40000 },
-      faceid: { 'working': 0, 'not-working': 100000 },
-      backglass: { 'mint': 0, 'minor': 10000, 'broken': 20000 },
-      screen: { 'mint': 0, 'changed': 40000, 'cracked': 80000 },
-      body: { 'mint': 0, 'minor': 15000, 'dents': 25000 }
-    },
-    '13': {
-      battery: { '90+': 0, '84-90': 5000, '79-84': 10000, '78-': 25000, 'changed': 30000 },
-      faceid: { 'working': 0, 'not-working': 80000 },
-      backglass: { 'mint': 0, 'minor': 10000, 'broken': 20000 },
-      screen: { 'mint': 0, 'changed': 30000, 'cracked': 50000 },
-      body: { 'mint': 0, 'minor': 10000, 'dents': 20000 }
-    },
-    '13pro': {
-      battery: { '90+': 0, '84-90': 10000, '79-84': 20000, '78-': 30000, 'changed': 30000 },
-      faceid: { 'working': 0, 'not-working': 100000 },
-      backglass: { 'mint': 0, 'minor': 20000, 'broken': 30000 },
-      screen: { 'mint': 0, 'changed': 100000, 'cracked': 150000 },
-      body: { 'mint': 0, 'minor': 15000, 'dents': 25000 }
-    },
-    '14': {
-      battery: { '90+': 0, '84-90': 10000, '79-84': 20000, '78-': 40000, 'changed': 30000 },
-      faceid: { 'working': 0, 'not-working': 150000 },
-      backglass: { 'mint': 0, 'minor': 15000, 'broken': 30000 },
-      screen: { 'mint': 0, 'changed': 100000, 'cracked': 130000 },
-      body: { 'mint': 0, 'minor': 20000, 'dents': 30000 },
-      sim: { 'physical': 0, 'Physical sim plus eSIM ': 50000 }
-    },
-    '14promax': {
-      battery: { '90+': 0, '84-90': 10000, '79-84': 20000, '78-': 40000, 'changed': 30000 },
-      faceid: { 'working': 0, 'not-working': 200000 },
-      backglass: { 'mint': 0, 'minor': 15000, 'broken': 30000 },
-      screen: { 'mint': 0, 'changed': 140000, 'cracked': 180000 },
-      body: { 'mint': 0, 'minor': 30000, 'dents': 40000 },
-      sim: { 'physical': 0, 'Physical sim plus eSIM ': 50000 }
-    },
-    '15pro': {
-      battery: { '90+': 0, '84-90': 15000, '79-84': 30000, '78-': 50000, 'changed': 40000 },
-      faceid: { 'working': 0, 'not-working': 200000 },
-      backglass: { 'mint': 0, 'minor': 15000, 'broken': 30000 },
-      screen: { 'mint': 0, 'changed': 200000, 'cracked': 250000 },
-      body: { 'mint': 0, 'minor': 30000, 'dents': 40000 },
-      sim: { 'physical': 0, 'Physical sim plus eSIM ': 100000 }
-    },
-    '16': {
-      battery: { '90+': 0, '84-90': 15000, '79-84': 30000, '78-': 50000, 'changed': 40000 },
-      faceid: { 'working': 0, 'not-working': 200000 },
-      backglass: { 'mint': 0, 'minor': 15000, 'broken': 30000 },
-      screen: { 'mint': 0, 'changed': 200000, 'cracked': 250000 },
-      body: { 'mint': 0, 'minor': 30000, 'dents': 40000 },
-      sim: { 'physical': 0, 'Physical sim plus eSIM ': 100000 }
-    }
-  };
-
 const newPhoneDatabase: any = {
     "Used Premium Grade A": {
         "iPhone X": { "64GB": 135000, "256GB": 155000 },
@@ -180,6 +89,19 @@ const newPhoneDatabase: any = {
 export default function TradeInPage() {
   const [step, setStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [conditionGroups, setConditionGroups] = useState<any[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(true);
+
+  interface TradeInFormData {
+    model: string;
+    battery: string;
+    faceid: string;
+    backglass: string;
+    screen: string;
+    body: string;
+    sim: string;
+  }
 
   const [tradeInFormData, setTradeInFormData] = useState<TradeInFormData>({
     model: '',
@@ -204,35 +126,51 @@ export default function TradeInPage() {
 
   const router = useRouter();
 
+  // Fetch condition attribute groups
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const res = await fetch('/api/admin/condition-attributes/groups');
+        const data = await res.json();
+        setConditionGroups(data);
+      } catch (error) {
+        console.error('Failed to fetch condition attribute groups:', error);
+      } finally {
+        setLoadingGroups(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
+
   // ===== CALCULATIONS =====
   const tradeInPrice = useMemo(() => {
-    const { model, battery, faceid, backglass, screen, body, sim } = tradeInFormData;
+    const { model } = tradeInFormData;
     
-    if (!model || !battery || !faceid || !backglass || !screen || !body) {
+    if (!model || conditionGroups.length === 0) {
       return 0;
     }
 
+    // Get base price from admin phone models (already converted from hardcoded pricing)
     const modelData:any = pricingData[model as keyof typeof pricingData];
     if (!modelData) return 0;
-
-    const rules = deductionRules[modelData.series];
-    if (!rules) return modelData.base;
     
     let basePrice = modelData.base;
-    let totalDeductions = 0;
+    let totalModifier = 1.0; // Start with 100%
     
-    totalDeductions += rules.battery[battery] || 0;
-    totalDeductions += rules.faceid[faceid] || 0;
-    totalDeductions += rules.backglass[backglass] || 0;
-    totalDeductions += rules.screen[screen] || 0;
-    totalDeductions += rules.body[body] || 0;
+    // Apply price modifiers from admin condition attributes
+    conditionGroups.forEach(group => {
+      const selectedValue = (tradeInFormData as any)[group.key];
+      if (selectedValue) {
+        const selectedOption = group.options.find((opt: any) => opt.value === selectedValue);
+        if (selectedOption) {
+          totalModifier *= selectedOption.priceModifier;
+        }
+      }
+    });
     
-    if (rules.sim && sim) {
-      totalDeductions += rules.sim[sim] || 0;
-    }
-    
-    return basePrice - totalDeductions;
-  }, [tradeInFormData]);
+    return Math.round(basePrice * totalModifier);
+  }, [tradeInFormData, conditionGroups]);
 
   const newPhonePrice = useMemo(() => {
     const { category, model, storage } = newPhoneFormData;
@@ -260,60 +198,139 @@ export default function TradeInPage() {
   }, [newPhoneFormData.category, newPhoneFormData.model]);
 
   // ===== VALIDATION =====
+  const totalConditionSteps = conditionGroups.length; // Dynamic based on fetched groups
+  const newPhoneCategoryStep = 2 + totalConditionSteps; // After model + all conditions
+  const newPhoneModelStep = newPhoneCategoryStep + 1;
+  const newPhoneStorageStep = newPhoneModelStep + 1;
+  const summaryStep = newPhoneStorageStep + 1;
+  const swapMethodStep = summaryStep + 1;
+
   const isStep1Valid = useMemo(() => {
-    const { model } = tradeInFormData;
-    return !!model;
-  }, [tradeInFormData]);
+    return !!tradeInFormData.model;
+  }, [tradeInFormData.model]);
 
-  const isStep2Valid = useMemo(() => {
-    const { battery, faceid, backglass, screen, body } = tradeInFormData;
-    return !!battery && !!faceid && !!backglass && !!screen && !!body;
-  }, [tradeInFormData]);
+  const areAllConditionsValid = useMemo(() => {
+    return conditionGroups.every(group => !!(tradeInFormData as any)[group.key]);
+  }, [tradeInFormData, conditionGroups]);
 
-  const isStep3Valid = useMemo(() => {
-    const { category, model, storage } = newPhoneFormData;
-    return !!category && !!model && !!storage;
-  }, [newPhoneFormData]);
+  const isCategoryValid = useMemo(() => {
+    return !!newPhoneFormData.category;
+  }, [newPhoneFormData.category]);
 
-  const isStep4Valid = useMemo(() => {
+  const isNewPhoneModelValid = useMemo(() => {
+    return !!newPhoneFormData.model;
+  }, [newPhoneFormData.model]);
+
+  const isNewPhoneStorageValid = useMemo(() => {
+    return !!newPhoneFormData.storage;
+  }, [newPhoneFormData.storage]);
+
+  const isEmailValid = useMemo(() => {
     return !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }, [email]);
 
-  const isStep5Valid = useMemo(() => {
+  const isSwapMethodValid = useMemo(() => {
     return !!swapMethod;
   }, [swapMethod]);
 
   // ===== EFFECTS =====
   useEffect(() => {
-    if (step === 2) {
+    if (containerRef.current) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, [step]);
+
+  useEffect(() => {
+    if (step === newPhoneModelStep) {
         const firstModel = modelsForCategory.length > 0 ? modelsForCategory[0].value : '';
         if (newPhoneFormData.model !== firstModel) {
             setNewPhoneFormData(prev => ({ ...prev, model: firstModel, storage: '' }));
         }
     }
-  }, [newPhoneFormData.category, modelsForCategory, step]);
+  }, [newPhoneFormData.category, modelsForCategory, step, newPhoneModelStep]);
 
   useEffect(() => {
-    if (step === 2) {
+    if (step === newPhoneStorageStep) {
         const firstStorage = storageForModel.length > 0 ? storageForModel[0].value : '';
         if (newPhoneFormData.storage !== firstStorage) {
             setNewPhoneFormData(prev => ({ ...prev, storage: firstStorage }));
         }
     }
-  }, [newPhoneFormData.model, storageForModel, step]);
+  }, [newPhoneFormData.model, storageForModel, step, newPhoneStorageStep]);
 
   // ===== HANDLERS =====
-  const handleNextStep = () => {
-    setStep(prev => prev + 1);
+  const handleNextStep = async () => {
+    if (step === summaryStep && isEmailValid) {
+      try {
+        // Send email with breakdown details
+        const response = await fetch('/api/estimates', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            tradeInDevice: {
+              model: tradeInFormData.model,
+              storage: tradeInFormData.storage,
+              condition: tradeInFormData
+            },
+            newDevice: {
+              category: newPhoneFormData.category,
+              model: newPhoneFormData.model,
+              storage: newPhoneFormData.storage
+            },
+            tradeInPrice,
+            newPhonePrice,
+            amountToPay,
+            sendEmail: true
+          }),
+        });
+
+        if (response.ok) {
+          // Navigate to appointment booking page
+          window.location.href = '/tradein/schedule';
+        } else {
+          console.error('Failed to send email');
+          // Still navigate to appointment booking
+          window.location.href = '/tradein/schedule';
+        }
+      } catch (error) {
+        console.error('Error sending email:', error);
+        // Still navigate to appointment booking
+        window.location.href = '/tradein/schedule';
+      }
+    } else {
+      setStep(prev => prev + 1);
+    }
   };
 
   const handlePrevStep = () => {
     setStep(prev => prev - 1);
   };
 
+  const handleModelSelected = () => {
+    if (isStep1Valid) {
+      setTimeout(() => {
+        setStep(2);
+      }, 300);
+    }
+  };
+
+  const handleConditionSelected = (field: string, value: string) => {
+    setTradeInFormData(prev => ({ ...prev, [field]: value }));
+    // Auto-advance after selection
+    setTimeout(() => {
+      setStep(prev => prev + 1);
+    }, 300);
+  };
+
   const handleSaveSwap = async () => {
     console.log('handleSaveSwap called');
-    if (!isStep1Valid || !isStep2Valid || !isStep3Valid || !isStep4Valid || !isStep5Valid) {
+    if (!isStep1Valid || !areAllConditionsValid || !isCategoryValid || !isNewPhoneModelValid || !isNewPhoneStorageValid || !isEmailValid || !isSwapMethodValid) {
       return;
     }
     setIsSaving(true);
@@ -352,180 +369,262 @@ export default function TradeInPage() {
 
 
   return (
-    <div className="min-h-screen py-12 px-6">
-      <div className="max-w-lg mx-auto">
-        {/* Progress Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            {[1, 2, 3, 4].map((stepNumber) => (
-              <div key={stepNumber} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 ${
-                  step >= stepNumber 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-200 text-gray-500'
-                }`}>
-                  {stepNumber}
-                </div>
-                {stepNumber < 4 && (
-                  <div className={`w-16 h-0.5 mx-2 transition-all duration-200 ${
-                    step > stepNumber ? 'bg-blue-600' : 'bg-gray-200'
-                  }`} />
-                )}
-              </div>
-            ))}
+    <div className="min-h-screen bg-white">
+      {/* Header with Navigation */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          {/* Back Button */}
+          <button
+            onClick={handlePrevStep}
+            disabled={step === 1}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+              step === 1
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-black hover:bg-gray-100 active:scale-95'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="font-medium">Prev question</span>
+          </button>
+          
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <img src="/swapped-logo.png" width={24} height={24} alt="" />
+            <span className="text-xl tracking-tight">Swapped</span>
           </div>
-          <div className="text-center">
-            <p className="apple-footnote text-gray-500">
-              {step === 1 && "Step 1 of 5: Phone Model"}
-              {step === 2 && "Step 2 of 5: Phone Condition"}
-              {step === 3 && "Step 3 of 5: Select New Phone"}
-              {step === 4 && "Step 4 of 5: Swap Summary"}
-              {step === 5 && "Step 5 of 5: Choose Swap Method"}
-            </p>
+          
+          {/* Progress or Step Indicator */}
+          <div className="text-sm text-gray-500 font-medium">
+           
+          </div>
+        </div>
+      </header>
+
+      <div ref={containerRef} className="min-h-screen py-12 px-6">
+      <div className="max-w-2xl mx-auto">
+        {/* Progress Indicator */}
+        <div className="mb-12">
+          <div className="max-w-md mx-auto">
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-black transition-all duration-500 ease-out"
+                style={{ 
+                  width: `${(step / swapMethodStep) * 100}%` 
+                }}
+              />
+            </div>
           </div>
         </div>
 
+        {/* Step 1: Phone Model Selection */}
         {step === 1 && (
           <div>
+            {/* Explanatory text */}
+            <div className="text-center mb-12 max-w-3xl mx-auto">
+              <h1 className="text-2xl lg:text-3xl font-semibold text-black mb-6 tracking-tight">
+                Help us determine your iPhone's
+                <span className="text-black font-light italic"> exact value</span>
+              </h1>
+              <p className="text-lg text-black/70 leading-relaxed font-medium">
+                Answer a few quick questions to get an accurate quote for your trade-in.
+              </p>
+            </div>
+            
             <PhoneModelSelector 
               formData={tradeInFormData}
               setFormData={setTradeInFormData}
+              onSelect={handleModelSelected}
             />
-            <button 
-              onClick={handleNextStep}
-              disabled={!isStep1Valid}
-              className="apple-button-primary w-full mt-6 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              Continue
-            </button>
           </div>
         )}
 
-        {step === 2 && (
-          <div>
-            <PhoneConditionSelector 
-              formData={tradeInFormData}
-              setFormData={setTradeInFormData}
-            />
-            <div className="flex gap-3 mt-6">
-              <button 
-                onClick={handlePrevStep}
-                className="apple-button-secondary flex-1"
-              >
-                Back
-              </button>
-              <button 
-                onClick={handleNextStep}
-                disabled={!isStep2Valid}
-                className="apple-button-primary flex-1 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div>
-            <NewPhoneSelector 
-              formData={newPhoneFormData}
-              setFormData={setNewPhoneFormData}
-              finalPrice={newPhonePrice}
-              categoryOptions={categoryOptions}
-              modelsForCategory={modelsForCategory}
-              storageForModel={storageForModel}
-            />
-            <div className="flex gap-3 mt-6">
-              <button 
-                onClick={handlePrevStep}
-                className="apple-button-secondary flex-1"
-              >
-                Back
-              </button>
-              <button 
-                onClick={handleNextStep}
-                disabled={!isStep3Valid}
-                className="apple-button-primary flex-1 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                Get Swap Price
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="apple-card">
-            <div className="text-center mb-6">
-              <h2 className="apple-title mb-2">Swap Summary</h2>
-              <p className="apple-body text-gray-600">Review your swap details and pricing breakdown</p>
-            </div>
+        {/* Steps 2 to N: Individual Condition Questions */}
+        {step >= 2 && step < newPhoneCategoryStep && !loadingGroups && (
+          (() => {
+            const groupIndex = step - 2;
+            const group = conditionGroups[groupIndex];
             
-            <div className="space-y-6 mb-8">
-              {/* Enthusiastic Price Display */}
-              <div className="text-center bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border-2 border-green-200">
-                <div className="mb-4">
-                  <h3 className="apple-title text-gray-900 mb-2">Your Swap Quote</h3>
-                  <p className="apple-body text-gray-700">
-                    Here's what you'll need to complete your phone upgrade:
-                  </p>
-                </div>
-                
-                <div className="mb-4">
-                  <div className="apple-display text-blue-600 font-bold mb-2">
-                    ₦{(amountToPay - 20000).toLocaleString()} - ₦{(amountToPay + 20000).toLocaleString()}
-                  </div>
-                  <p className="apple-footnote text-gray-600">
-                    Final amount may vary based on device inspection
-                  </p>
-                </div>
+            if (!group) return null;
 
-                <div className="bg-white rounded-lg p-4 mb-4">
-                  <p className="apple-body text-gray-800 font-medium">
-                    Your {modelsForCategory.find((m: any) => m.value === newPhoneFormData.model)?.label || 'selected phone'} is almost within reach! 
-                  </p>
-                  <p className="apple-footnote text-gray-600 mt-2">
-                    Complete the swap process to get your hands on this incredible upgrade.
-                  </p>
-                </div>
-              </div>
-
-              {/* Email Input */}
+            return (
               <div>
-                <label className="apple-subheadline font-medium text-gray-900 mb-3 block">
-                  Email Address
-                </label>
-                <p className="apple-footnote text-gray-500 mb-3">
-                  We'll send you the swap breakdown and next steps
-                </p>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white apple-body focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                <SingleConditionQuestion
+                  question={group.label}
+                  description={group.description}
+                  fieldKey={group.key}
+                  options={group.options}
+                  value={(tradeInFormData as any)[group.key] || ''}
+                  onSelect={(value) => handleConditionSelected(group.key, value)}
+                  showBatteryInfo={group.key === 'battery'}
                 />
               </div>
-            </div>
-            
-            <div className="flex gap-3">
+            );
+          })()
+        )}
+
+        {/* New Phone Category Selection */}
+        {step === newPhoneCategoryStep && (
+          <div>
+            <SingleDropdownQuestion
+              question="What category of phone do you want?"
+              description="Choose the condition type for your new phone"
+              options={categoryOptions}
+              value={newPhoneFormData.category}
+              onSelect={(value) => {
+                setNewPhoneFormData(prev => ({ ...prev, category: value, model: '', storage: '' }));
+                setTimeout(() => setStep(newPhoneModelStep), 300);
+              }}
+              showTooltip={true}
+              tooltipContent={`
+                <div class="mb-2 font-semibold">Category Definitions:</div>
+                <div class="space-y-2">
+                  <div><strong>Used Premium Grade A:</strong> Pre-owned phones in excellent condition with minimal wear</div>
+                  <div><strong>New (sealed never opened):</strong> Brand new phones in original sealed packaging</div>
+                  <div><strong>New (opened but never used):</strong> New phones that have been unboxed but never been used</div>
+                </div>
+              `}
+            />
+            <div className="flex gap-3 mt-6 max-w-2xl mx-auto">
               <button 
                 onClick={handlePrevStep}
-                className="apple-button-secondary flex-1"
+                className="
+                  relative flex items-center justify-center px-10 py-3 w-full
+                  bg-gradient-to-b from-[#1D1B1C] via-[#191718] to-[#252120]
+                  rounded-full font-semibold text-white text-lg tracking-wide
+                  hover:scale-105 transition-all duration-300
+                  shadow-[inset_0px_0px_0.25px_1.25px_#262524,inset_3px_5px_2px_-4.75px_#FFFFFF,inset_1.25px_1.5px_0px_rgba(0,0,0,0.75),inset_0px_4.75px_0.25px_-2.5px_#FBFBFB,inset_1px_1px_3px_3px_#1A1818,inset_0px_-3px_1px_rgba(0,0,0,0.5),inset_2.5px_-2px_3px_rgba(124,108,94,0.75),inset_0px_-3px_3px_1px_rgba(255,245,221,0.1)]
+                "
               >
                 Back
-              </button>
-              <button 
-                onClick={handleNextStep}
-                disabled={!isStep4Valid}
-                className="apple-button-primary flex-1 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                Continue
               </button>
             </div>
           </div>
         )}
 
-        {step === 5 && (
+        {/* New Phone Model Selection */}
+        {step === newPhoneModelStep && (
+          <div>
+            <SingleDropdownQuestion
+              question="Which iPhone model?"
+              description="Select the specific model you want"
+              options={modelsForCategory}
+              value={newPhoneFormData.model}
+              onSelect={(value) => {
+                setNewPhoneFormData(prev => ({ ...prev, model: value, storage: '' }));
+                setTimeout(() => setStep(newPhoneStorageStep), 300);
+              }}
+            />
+          </div>
+        )}
+
+        {/* New Phone Storage Selection */}
+        {step === newPhoneStorageStep && (
+          <div>
+            <SingleDropdownQuestion
+              question="How much storage?"
+              description="Choose your preferred storage capacity"
+              options={storageForModel}
+              value={newPhoneFormData.storage}
+              onSelect={(value) => {
+                setNewPhoneFormData(prev => ({ ...prev, storage: value }));
+                setTimeout(() => setStep(summaryStep), 300);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Summary Step */}
+        {step === summaryStep && (
+          <div className="max-w-2xl mx-auto">
+            {/* Single Unified Card */}
+            <div className="bg-white border-2 border-gray-100 rounded-3xl p-8 shadow-lg">
+              {/* Header with Success Icon */}
+              <div className="text-center mb-6">
+               
+                <h1 className="text-2xl font-black text-black mb-2 tracking-tight">
+                  You're Almost Done!
+                </h1>
+                <p className="text-sm text-black/60 font-medium">
+                  Complete your swap and get your new iPhone
+                </p>
+              </div>
+
+              {/* Amount Section */}
+              <div className="text-center mb-6 pb-6 border-b border-gray-100">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  Amount to Pay
+                </p>
+                <div className="text-2xl font-semibold text-black mb-3">
+                  ₦{(amountToPay - 20000).toLocaleString()} - ₦{(amountToPay + 20000).toLocaleString()}
+                </div>
+                <p className="text-xs text-gray-500 font-medium">
+                  {/* add an info icon here */}
+                  Final amount determined after device inspection
+                </p>
+              </div>
+
+              {/* Email Section */}
+              <div className="mb-6">
+                <div className="text-center mb-4">
+              
+                  <h3 className="text-base font-bold text-black mb-2">
+                    Get Your Breakdown
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    We'll email complete details & appointment booking
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="relative w-full max-w-md mx-auto">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Your Email"
+                      className="
+                        w-full h-[58px] pl-6 pr-32 
+                        border-2 border-gray-300 rounded-full bg-white text-black placeholder-gray-500
+                        focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none 
+                        transition-all duration-200 text-base font-medium
+                        shadow-sm
+                      "
+                    />
+                    <button 
+                      onClick={handleNextStep}
+                      disabled={!isEmailValid}
+                      className="
+                        absolute right-1 top-1 bottom-1
+                        px-6 py-2 h-[50px]
+                        bg-gradient-to-b from-[#1D1B1C] via-[#191718] to-[#252120]
+                        text-white font-bold rounded-full
+                        transition-all duration-200
+                        disabled:opacity-50 disabled:cursor-not-allowed
+                        hover:scale-[1.02] active:scale-[0.98]
+                        shadow-[inset_0px_0px_0.25px_1.25px_#262524,inset_3px_5px_2px_-4.75px_#FFFFFF,inset_1.25px_1.5px_0px_rgba(0,0,0,0.75),inset_0px_4.75px_0.25px_-2.5px_#FBFBFB,inset_1px_1px_3px_3px_#1A1818,inset_0px_-3px_1px_rgba(0,0,0,0.5),inset_2.5px_-2px_3px_rgba(124,108,94,0.75),inset_0px_-3px_3px_1px_rgba(255,245,221,0.1)]
+                        flex items-center justify-center
+                      "
+                    >
+                      Send Now
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Note */}
+              <div className="text-center mt-4">
+                <p className="text-xs text-gray-500">
+                  You'll be redirected to booking after sending details
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Swap Method Step */}
+        {step === swapMethodStep && (
           <div className="apple-card">
             <div className="text-center mb-6">
               <h2 className="apple-title mb-2">Choose Swap Method</h2>
@@ -538,7 +637,7 @@ export default function TradeInPage() {
                 onClick={() => setSwapMethod('online')}
                 className={`w-full p-6 rounded-xl border-2 text-left transition-all duration-200 ${
                   swapMethod === 'online'
-                    ? 'border-blue-600 bg-blue-50'
+                    ? 'border-black bg-gray-100'
                     : 'border-gray-300 bg-white hover:border-gray-400'
                 }`}
               >
@@ -555,7 +654,7 @@ export default function TradeInPage() {
                   </div>
                   {swapMethod === 'online' && (
                     <div className="ml-4">
-                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
@@ -568,7 +667,7 @@ export default function TradeInPage() {
                 onClick={() => setSwapMethod('in-person')}
                 className={`w-full p-6 rounded-xl border-2 text-left transition-all duration-200 ${
                   swapMethod === 'in-person'
-                    ? 'border-blue-600 bg-blue-50'
+                    ? 'border-black bg-gray-100'
                     : 'border-gray-300 bg-white hover:border-gray-400'
                 }`}
               >
@@ -585,7 +684,7 @@ export default function TradeInPage() {
                   </div>
                   {swapMethod === 'in-person' && (
                     <div className="ml-4">
-                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
@@ -597,13 +696,19 @@ export default function TradeInPage() {
             <div className="flex gap-3">
               <button 
                 onClick={handlePrevStep}
-                className="apple-button-secondary flex-1"
+                className="
+                  relative flex items-center justify-center px-10 py-3 flex-1
+                  bg-gradient-to-b from-[#1D1B1C] via-[#191718] to-[#252120]
+                  rounded-full font-semibold text-white text-lg tracking-wide
+                  hover:scale-105 transition-all duration-300
+                  shadow-[inset_0px_0px_0.25px_1.25px_#262524,inset_3px_5px_2px_-4.75px_#FFFFFF,inset_1.25px_1.5px_0px_rgba(0,0,0,0.75),inset_0px_4.75px_0.25px_-2.5px_#FBFBFB,inset_1px_1px_3px_3px_#1A1818,inset_0px_-3px_1px_rgba(0,0,0,0.5),inset_2.5px_-2px_3px_rgba(124,108,94,0.75),inset_0px_-3px_3px_1px_rgba(255,245,221,0.1)]
+                "
               >
                 Back
               </button>
               <button 
                 onClick={handleSaveSwap}
-                disabled={isSaving || !isStep1Valid || !isStep2Valid || !isStep3Valid || !isStep4Valid || !isStep5Valid}
+                disabled={isSaving || !isStep1Valid || !areAllConditionsValid || !isCategoryValid || !isNewPhoneModelValid || !isNewPhoneStorageValid || !isEmailValid || !isSwapMethodValid}
                 className="apple-button-primary flex-1 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isSaving ? 'Processing...' : 'Complete Swap'}
@@ -624,6 +729,7 @@ export default function TradeInPage() {
         swapId={savedSwapId}
         swapMethod={swapMethod}
       />
+    </div>
     </div>
   );
 }
