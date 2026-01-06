@@ -99,20 +99,6 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm font-semibold text-blue-900 mb-2">Demo Credentials:</p>
-            <p className="text-sm text-blue-800">
-              Email: <code className="font-mono">admin@swapped.com</code>
-            </p>
-            <p className="text-sm text-blue-800">
-              Password: <code className="font-mono">admin123</code>
-            </p>
-            <p className="text-xs text-blue-700 mt-3">
-              💡 Change these in your .env file for production!
-            </p>
-          </div>
-
           {/* Back Link */}
           <div className="text-center">
             <Link href="/" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
